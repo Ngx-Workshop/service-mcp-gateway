@@ -44,6 +44,21 @@ Publishing is a separate release action. The publish script invokes
 Generated files must not replace DTO/controller source as the source of truth.
 Do not claim a version is published merely because local generation succeeded.
 
+For the initial npm release, log in with `npm login`, generate OpenAPI as above,
+and install the contract tooling. Preview with
+`npm run contracts:service-mcp-gateway:publish -- --dry-run`, then publish with
+`npm run contracts:service-mcp-gateway:publish`. The script changes into the
+contracts directory before publishing; `npm --prefix ... publish` can select the
+root package instead. Keep the service root `private: true`; only the contracts
+package should be publishable. The preview must show
+`@tmdjr/service-mcp-gateway-contracts` and only `dist` plus package metadata.
+
+After the initial release, configure the package's GitHub Actions trusted publisher
+on npm with organization `Ngx-Workshop`, repository `service-mcp-gateway`, workflow
+filename `deploy.yml`, no environment, and direct `npm publish` allowed. Re-run the
+failed workflow after configuring it. CI uses the GitHub run number as the patch
+version, so the initial local `0.0.1` does not conflict with run 3's `0.0.3`.
+
 ## Docker
 
 The tracked Compose file is named `docker-compose.yml `, with a trailing space.

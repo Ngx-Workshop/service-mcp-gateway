@@ -22,7 +22,7 @@
     "postbuild": "node dist/swagger.js",
     "contracts:service-mcp-gateway:gen": "npm --prefix ./contracts/service-mcp-gateway run gen",
     "contracts:service-mcp-gateway:build": "npm --prefix ./contracts/service-mcp-gateway run build",
-    "contracts:service-mcp-gateway:publish": "npm --prefix ./contracts/service-mcp-gateway publish --access public"
+    "contracts:service-mcp-gateway:publish": "cd ./contracts/service-mcp-gateway && npm publish --access public"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
