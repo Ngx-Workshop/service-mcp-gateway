@@ -9,3 +9,7 @@ The lockfile records package integrity; normal gateway builds require no sibling
 checkout. No credentials are included. Registry publication is separately gated
 by the producer CI workflow. Compare published contents before replacing this
 reviewed artifact with the registry dependency.
+
+Publication verified through npm trusted OIDC; every extracted published file
+matched this reviewed artifact. The gateway now pins registry 0.0.66, so the
+vendor artifact is retired.

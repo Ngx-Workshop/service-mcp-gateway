@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { randomBytes, createHash } from 'node:crypto';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 const issuer = 'https://auth.ngx-workshop.io',
   resource = 'https://mcp.ngx-workshop.io/mcp';
 const client = 'ngx-workshop-chatgpt-prod',
@@ -141,6 +141,36 @@ try {
     console.log(
       'Public HTTPS discovery, secure cookies, real login/consent and PKCE PASS.'
     );
+    if (process.env.MCP_AUTH_RESTART_CHECK === 'true') {
+      execFileSync(
+        'ssh',
+        ['root@24.144.98.154', 'docker restart ngx-auth-service'],
+        { stdio: 'pipe' }
+      );
+      let ready = false;
+      for (let attempt = 0; attempt < 30; attempt++) {
+        try {
+          ready =
+            (await request(issuer + '/.well-known/oauth-authorization-server'))
+              .status === 200;
+        } catch {}
+        if (ready) break;
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+      assert(ready, 'Auth restart readiness');
+      assert.equal(
+        (
+          await request(issuer + '/oauth/grants', {
+            headers: { cookie: session.cookie },
+          })
+        ).status,
+        200
+      );
+      console.log(
+        'Persistent production keys and browser session across auth restart PASS.'
+      );
+    }
+
     stage = 'real catalog tools';
     await new Promise((resolve, reject) => {
       const child = spawn(

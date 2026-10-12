@@ -65,7 +65,7 @@ cross-origin GET; MCP requests require the configured Origin policy and bearer.
 proxy headers, Host/Origin rejection, public discovery CORS, fail-closed dependency
 readiness and existing three-tool/bearer/revocation behavior. Strict application
 and contract builds, generated-contract checks and lint passed. Local Docker
-build proves the vendored auth client is copied before dependency installation.
+build installs the pinned published auth-client 0.0.66 with the committed lockfile.
 Previous real local owner integration evidence is recorded in feature 003; no
 public production client or edge was exercised in this phase.
 
