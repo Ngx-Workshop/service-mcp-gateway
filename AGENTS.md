@@ -30,7 +30,8 @@ Do not require sibling checkouts to work locally.
 - Run behavior tests, strict build, contract build and non-mutating lint as
   appropriate. Distinguish disposable HTTP doubles from live external integration.
 - Update context docs and external consumer handoff for compatibility changes.
-- Production-readiness files are implemented; Actions validates only. Deployment
-  and publication require separate authorization. Never reintroduce automatic rollout.
+- Production is deployed after explicit user authorization. Actions validates;
+  package publication is a separate manual action after validation. Never
+  reintroduce automatic rollout.
 
 The lightweight Markdown workflow requires no installed Spec Kit or slash commands.
