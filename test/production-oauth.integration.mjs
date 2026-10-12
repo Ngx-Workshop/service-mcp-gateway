@@ -140,6 +140,36 @@ try {
     ).status,
     403
   );
+  stage = 'legacy sign-in compatibility';
+  const legacyLogin = await request(issuer + '/api/sign-in', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: login.email, password: login.password }),
+  });
+  assert.equal(legacyLogin.status, 200);
+  const legacyCookie = legacyLogin.headers
+    .getSetCookie()
+    .find((cookie) => cookie.startsWith('accessToken='));
+  assert(legacyCookie);
+  assert(/;\s*Secure/i.test(legacyCookie));
+  assert(/;\s*HttpOnly/i.test(legacyCookie));
+  assert(/SameSite=Strict/i.test(legacyCookie));
+  const legacyHeaders = { cookie: legacyCookie.split(';')[0] };
+  const validLegacy = await request(issuer + '/api/validate-access-token', {
+    headers: legacyHeaders,
+  });
+  assert.equal(validLegacy.status, 200);
+  assert.equal(await validLegacy.json(), true);
+  const ownMetadata = await request(issuer + '/api/user-metadata', {
+    headers: legacyHeaders,
+  });
+  assert.equal(ownMetadata.status, 200);
+  assert.equal((await ownMetadata.json()).email, login.email);
+  assert.equal(
+    await (await request(issuer + '/api/validate-access-token')).json(),
+    false
+  );
+  console.log('Public legacy sign-in, secure JWT cookie and own-user read PASS.');
   stage = 'real login consent PKCE';
   const session = await mint();
   try {
