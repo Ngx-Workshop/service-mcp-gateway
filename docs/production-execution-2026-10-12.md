@@ -23,14 +23,14 @@ The public signing JWKS contains no private fields.
 
 | Component | Reviewed merged source | Running CI image revision | Validation/publication |
 | --- | --- | --- | --- |
-| service-auth | f3ff49468699ca5151693adf073c39b95238cd9d | b013fb9f6cc5a96e31217237b7f4b13d86e81619 | CI 38315988019; publish 38312384697 |
+| service-auth | b0176b81fad654b38f5e0896a398fd19b701d43d | c4c0a6b6d2666feb9681640a9136135b8997a523 | CI 38321784974; publish 38312384697 (client unchanged) |
 | service-mcp-gateway | ea230981f39f59973ff5b3d1cdf456035eb1cbff | 9e6630a2e6e059805f9e6580ac845f8b86a5a89a | CI 38315972629; publish 38312987246 |
 
 The CI pull-request merge revisions have the same Git trees as their reviewed
 merged source. Images were transferred as immutable archives, SHA256 checked,
 revision/architecture/non-root labels verified, then promoted explicitly.
-Image names: service-auth:b013fb9f6cc5 and service-mcp-gateway:9e6630a2e6e0.
-Image IDs: auth sha256:d34034caf4aa840b931b4468e6fc0d9f0426d2d80bea2de0a7fb2ddef0b9cdad;
+Image names: service-auth:c4c0a6b6d266 and service-mcp-gateway:9e6630a2e6e0.
+Image IDs: auth sha256:c81eea59b2f78a1a39a13037668122d65367c535f40b76d3d39a7929b1c4f709;
 gateway sha256:d3daa1eab4d4c7161e57feda161c2cb28369af6f6a554d07f4700290389da4fc.
 Edge/backhaul nginx uses pinned digest
 sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94.
