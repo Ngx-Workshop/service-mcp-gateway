@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/mcp-gateway/hello-world": {
+    "/.well-known/oauth-protected-resource/mcp": {
       "get": {
-        "operationId": "ExampleCrudController_helloWorld",
+        "operationId": "OAuthMetadataController_metadata",
         "parameters": [],
         "responses": {
           "200": {
@@ -11,431 +11,492 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/OAuthResourceMetadataDto"
                 }
               }
             }
           }
         },
+        "summary": "OAuth protected MCP resource metadata",
         "tags": [
-          "mcp-gateway"
-        ]
-      }
-    },
-    "/mcp-gateway/auth-test": {
-      "get": {
-        "operationId": "ExampleCrudController_authTest",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthTestDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "mcp-gateway"
-        ]
-      }
-    },
-    "/mcp-gateway": {
-      "post": {
-        "operationId": "ExampleCrudController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateExampleMongodbDocDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ExampleMongodbDocDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "mcp-gateway"
-        ]
-      },
-      "get": {
-        "operationId": "ExampleCrudController_findAll",
-        "parameters": [
-          {
-            "name": "archived",
-            "required": false,
-            "in": "query",
-            "description": "Filter by archived status",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ExampleMongodbDocDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "mcp-gateway"
-        ]
-      }
-    },
-    "/mcp-gateway/{id}": {
-      "get": {
-        "operationId": "ExampleCrudController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ExampleMongodbDocDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "mcp-gateway"
-        ]
-      },
-      "patch": {
-        "operationId": "ExampleCrudController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateExampleMongodbDocDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ExampleMongodbDocDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "mcp-gateway"
-        ]
-      },
-      "delete": {
-        "operationId": "ExampleCrudController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "mcp-gateway"
-        ]
-      }
-    },
-    "/mcp-gateway/name/{name}": {
-      "get": {
-        "operationId": "ExampleCrudController_findByName",
-        "parameters": [
-          {
-            "name": "name",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ExampleMongodbDocDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "mcp-gateway"
-        ]
-      }
-    },
-    "/mcp-gateway/{id}/archive": {
-      "patch": {
-        "operationId": "ExampleCrudController_archive",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ExampleMongodbDocDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "mcp-gateway"
-        ]
-      }
-    },
-    "/mcp-gateway/{id}/unarchive": {
-      "patch": {
-        "operationId": "ExampleCrudController_unarchive",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ExampleMongodbDocDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "mcp-gateway"
+          "OAuthMetadata"
         ]
       }
     }
   },
   "info": {
-    "title": "NGX service-mcp-gateway API",
-    "description": "",
-    "version": "1.0.0",
+    "title": "NGX Workshop catalog MCP contracts",
+    "description": "MCP runs at /mcp. Components describe tool arguments/results; there are no REST CRUD endpoints. See mcp-tools.json for protocol tool definitions.",
+    "version": "0.1.0",
     "contact": {}
   },
   "tags": [],
   "servers": [],
   "components": {
     "schemas": {
-      "AuthTestDto": {
+      "OAuthResourceMetadataDto": {
         "type": "object",
         "properties": {
-          "message": {
+          "resource": {
             "type": "string"
+          },
+          "authorization_servers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scopes_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bearer_methods_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
-          "message"
+          "resource",
+          "authorization_servers",
+          "scopes_supported",
+          "bearer_methods_supported"
         ]
       },
-      "ExampleMongodbDocObjectDto": {
+      "ListWorkshopsInput": {
         "type": "object",
         "properties": {
-          "street": {
-            "type": "string"
-          },
-          "city": {
-            "type": "string"
-          },
-          "state": {
-            "type": "string"
-          },
-          "zip": {
-            "type": "string"
+          "sectionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
           }
         },
         "required": [
-          "street",
-          "city",
-          "state",
-          "zip"
-        ]
+          "sectionId"
+        ],
+        "additionalProperties": false
       },
-      "CreateExampleMongodbDocDto": {
+      "GetWorkshopInput": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "type": {
+          "sectionId": {
             "type": "string",
-            "enum": [
-              "SOME_ENUM",
-              "SOME_OTHER_ENUM"
-            ]
+            "minLength": 1,
+            "maxLength": 120
           },
-          "description": {
-            "type": "string"
-          },
-          "archived": {
-            "type": "boolean"
-          },
-          "exampleMongodbDocObject": {
-            "$ref": "#/components/schemas/ExampleMongodbDocObjectDto"
-          },
-          "lastUpdated": {
+          "workshopId": {
             "type": "string",
-            "format": "date-time"
+            "minLength": 1,
+            "maxLength": 120
           }
         },
         "required": [
-          "name",
-          "type"
-        ]
+          "sectionId",
+          "workshopId"
+        ],
+        "additionalProperties": false
       },
-      "ExampleMongodbDocDto": {
+      "GetCodingLabInput": {
         "type": "object",
         "properties": {
-          "_id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "type": {
+          "labId": {
             "type": "string",
-            "enum": [
-              "SOME_ENUM",
-              "SOME_OTHER_ENUM"
-            ]
+            "pattern": "^[a-f\\d]{24}$"
           },
-          "version": {
-            "type": "number"
-          },
-          "description": {
-            "type": "string"
-          },
-          "lastUpdated": {
+          "versionId": {
             "type": "string",
-            "format": "date-time"
-          },
-          "archived": {
-            "type": "boolean"
-          },
-          "exampleMongodbDocObject": {
-            "$ref": "#/components/schemas/ExampleMongodbDocObjectDto"
-          },
-          "__v": {
-            "type": "number"
+            "pattern": "^[a-f\\d]{24}$"
           }
         },
         "required": [
-          "_id",
-          "name",
-          "type",
-          "version",
-          "description",
-          "lastUpdated",
-          "archived",
-          "__v"
-        ]
+          "labId"
+        ],
+        "additionalProperties": false
       },
-      "UpdateExampleMongodbDocDto": {
+      "ListWorkshopsOutput": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "SOME_ENUM",
-              "SOME_OTHER_ENUM"
-            ]
-          },
-          "description": {
-            "type": "string"
-          },
-          "archived": {
-            "type": "boolean"
-          },
-          "exampleMongodbDocObject": {
-            "$ref": "#/components/schemas/ExampleMongodbDocObjectDto"
-          },
-          "lastUpdated": {
-            "type": "string",
-            "format": "date-time"
+          "workshops": {
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "sectionId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "title": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "summary": {
+                  "type": "string",
+                  "maxLength": 20000
+                },
+                "level": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "id",
+                "sectionId",
+                "title",
+                "summary",
+                "level"
+              ],
+              "additionalProperties": false
+            }
           }
-        }
+        },
+        "required": [
+          "workshops"
+        ],
+        "additionalProperties": false
+      },
+      "GetWorkshopOutput": {
+        "type": "object",
+        "properties": {
+          "workshop": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "sectionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "summary": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "outline": {
+                "maxItems": 500,
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "title": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "PAGE"
+                          ]
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "kind",
+                        "resourceId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "title": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "CODING_LAB"
+                          ]
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "kind",
+                        "resourceId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "title": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "ASSESSMENT_TEST"
+                          ]
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "kind",
+                        "resourceId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "sectionId",
+              "title",
+              "summary",
+              "level",
+              "outline"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "workshop"
+        ],
+        "additionalProperties": false
+      },
+      "GetCodingLabOutput": {
+        "type": "object",
+        "properties": {
+          "lab": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f\\d]{24}$"
+              },
+              "versionId": {
+                "type": "string",
+                "pattern": "^[a-f\\d]{24}$"
+              },
+              "versionNumber": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "difficulty": {
+                "type": "string",
+                "enum": [
+                  "intro",
+                  "easy",
+                  "medium",
+                  "hard"
+                ]
+              },
+              "language": {
+                "type": "string",
+                "enum": [
+                  "javascript",
+                  "typescript"
+                ]
+              },
+              "promptMarkdown": {
+                "type": "string",
+                "maxLength": 100000
+              },
+              "hints": {
+                "maxItems": 100,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 20000
+                }
+              },
+              "starterCode": {
+                "type": "string",
+                "maxLength": 100000
+              },
+              "sampleTests": {
+                "maxItems": 100,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "io",
+                        "unit"
+                      ]
+                    },
+                    "input": {},
+                    "expected": {},
+                    "comparator": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "deepEqual",
+                            "strictEqual",
+                            "numberTolerance",
+                            "stringNormalized",
+                            "custom"
+                          ]
+                        },
+                        "tolerance": {
+                          "type": "number"
+                        },
+                        "normalizeWhitespace": {
+                          "type": "boolean"
+                        },
+                        "ignoreCase": {
+                          "type": "boolean"
+                        },
+                        "customComparatorId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "testCode": {
+                      "type": "string",
+                      "maxLength": 50000
+                    },
+                    "framework": {
+                      "type": "string",
+                      "enum": [
+                        "jest",
+                        "vitest"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "kind"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "entryFnName": {
+                "type": "string",
+                "maxLength": 200
+              }
+            },
+            "required": [
+              "id",
+              "versionId",
+              "versionNumber",
+              "title",
+              "language",
+              "promptMarkdown",
+              "hints",
+              "starterCode",
+              "sampleTests"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "lab"
+        ],
+        "additionalProperties": false
+      },
+      "ToolError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "NOT_FOUND",
+                  "FORBIDDEN",
+                  "UPSTREAM_TIMEOUT",
+                  "UPSTREAM_UNAVAILABLE",
+                  "UPSTREAM_INVALID_RESPONSE",
+                  "INTERNAL_ERROR"
+                ]
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
       }
     }
   }

@@ -1,17 +1,11 @@
 # Feature specifications
 
-Keep implementation context in this repository so future agents can resume work
-without the original conversation or other repository checkouts.
-
-Use the [workflow](../.specify/README.md) and its templates. Create a folder such
-as `001-document-search/` for actual feature work, then replace the empty index
-below with relative links. A feature folder contains `spec.md`, `plan.md`,
-`tasks.md`, and `handoff.md`; add supporting research/contracts only when useful.
+Follow the [local workflow](../.specify/README.md). Each feature keeps its spec,
+plan, tasks and handoff for work without prior conversation context.
 
 | Feature | Status | Spec | Plan | Tasks | Handoff |
 | --- | --- | --- | --- | --- | --- |
-| No feature records yet | — | — | — | — | — | — |
-
-Keep one row per feature, retain completed records for rationale, and update
-status when work changes. Select work from the user's request and this index;
-the largest folder number is not automatically the active feature.
+| 001 Catalog MCP | Complete (local scope) | [Spec](001-catalog-mcp/spec.md) | [Plan](001-catalog-mcp/plan.md) | [Tasks](001-catalog-mcp/tasks.md) | [Handoff](001-catalog-mcp/handoff.md) |
+| 002 Real local catalog integration | Complete (local scope) | [Spec](002-live-catalog-integration/spec.md) | [Plan](002-live-catalog-integration/plan.md) | [Tasks](002-live-catalog-integration/tasks.md) | [Handoff](002-live-catalog-integration/handoff.md) |
+| 003 OAuth resource server | Complete (local OAuth scope) | [Spec](003-oauth-resource-server/spec.md) | [Plan](003-oauth-resource-server/plan.md) | [Tasks](003-oauth-resource-server/tasks.md) | [Handoff](003-oauth-resource-server/handoff.md) |
+| 004 Deployment | Readiness and live preflight audited; release blocked | [Spec](004-deployment/spec.md) | [Plan](004-deployment/plan.md) | [Tasks](004-deployment/tasks.md) | [Handoff](004-deployment/handoff.md) |

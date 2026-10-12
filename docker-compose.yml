@@ -1,18 +1,30 @@
-# docker-compose.yml
-version: '3.8'
-
 services:
   service-mcp-gateway:
     build: .
     container_name: service-mcp-gateway
     restart: unless-stopped
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     ports:
-      - "3011:3011"
-    env_file:
-      - .env
-    networks:
-      - ngx-net
+      - "${APP_PRIVATE_IP:?Set approved private application address}:3011:3011"
+    env_file: [.env]
+    environment:
+      NODE_ENV: production
+      RUNTIME_PROFILE: production
+      LISTEN_HOST: 0.0.0.0
+      MCP_AUTH_MODE: oauth
+      AUTH_INTROSPECTION_SECRET_FILE: /run/secrets/introspection
+    volumes:
+      - type: bind
+        source: ${INTROSPECTION_SECRET_HOST_FILE:?Set persistent owner-only secret path}
+        target: /run/secrets/introspection
+        read_only: true
 
+    networks: [ngx-net]
 networks:
   ngx-net:
     external: true

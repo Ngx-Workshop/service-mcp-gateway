@@ -1,5 +1,10 @@
-export type { AuthTestDto } from './models/AuthTestDto';
-export type { CreateExampleMongodbDocDto } from './models/CreateExampleMongodbDocDto';
-export type { ExampleMongodbDocDto } from './models/ExampleMongodbDocDto';
-export type { ExampleMongodbDocObjectDto } from './models/ExampleMongodbDocObjectDto';
-export type { UpdateExampleMongodbDocDto } from './models/UpdateExampleMongodbDocDto';
+import type { components } from './service-mcp-gateway.types.js';
+export type OAuthResourceMetadataDto = components['schemas']['OAuthResourceMetadataDto'];
+export type ListWorkshopsInput = components['schemas']['ListWorkshopsInput'];
+export type GetWorkshopInput = components['schemas']['GetWorkshopInput'];
+export type GetCodingLabInput = components['schemas']['GetCodingLabInput'];
+export type ListWorkshopsOutput = components['schemas']['ListWorkshopsOutput'];
+export type GetWorkshopOutput = components['schemas']['GetWorkshopOutput'];
+export type GetCodingLabOutput = components['schemas']['GetCodingLabOutput'];
+export type ToolError = components['schemas']['ToolError'];
+export { mcpCatalogContract } from './mcp-tools.js';

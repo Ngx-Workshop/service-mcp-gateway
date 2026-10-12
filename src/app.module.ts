@@ -1,30 +1,22 @@
+import { OAuthMetadataController } from './auth/oauth-metadata.controller';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ExampleMongodbDocModule } from './example-crud/example-crud.module';
-
-const DB_IMPORTS =
-  process.env.GENERATE_OPENAPI === 'true'
-    ? []
-    : [
-        MongooseModule.forRootAsync({
-          inject: [ConfigService],
-          useFactory: async (config: ConfigService) => ({
-            uri: config.get<string>('MONGODB_URI'),
-            serverSelectionTimeoutMS: 5000, // Timeout in 5 seconds
-          }),
-        }),
-      ];
+import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
+import { CatalogClient } from './clients/catalog.client';
+import { CatalogToolsService } from './tools/catalog-tools.service';
+import { McpController } from './mcp/mcp.controller';
+import { CATALOG_CONFIG, loadCatalogConfig } from './mcp/catalog.config';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    ...DB_IMPORTS,
-    ExampleMongodbDocModule,
+  imports: [ConfigModule.forRoot({ isGlobal: true }), HttpModule],
+  controllers: [McpController, OAuthMetadataController],
+  providers: [
+    CatalogClient,
+    CatalogToolsService,
+    {
+      provide: CATALOG_CONFIG,
+      useFactory: () => loadCatalogConfig(process.env),
+    },
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}
