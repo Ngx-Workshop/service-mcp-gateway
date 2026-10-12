@@ -9,7 +9,7 @@ Install with `npm ci`. Supply a local `.env` or environment containing:
 
 ```dotenv
 MONGODB_URI=mongodb://127.0.0.1:27017/seed_service_dev
-PORT=3003
+PORT=3011
 AUTH_BASE_URL=http://localhost:3000
 ```
 
@@ -107,3 +107,14 @@ Source observations from 2026-09-29; these are not executed test results.
 
 Remove/update limitations when fixed. Update architecture and environment guidance
 whenever the corresponding implementation changes.
+
+## Deployment port verification
+
+The service uses port 3011 in project metadata, runtime defaults, Docker, Nginx,
+and both deployment workflow copies. The Actions `PORT` secret must be `3011`.
+Run 38210767990 failed before any files were copied because its inherited workflow
+required port 3003. The workflow validation, container mapping, and startup check
+now match the service port. Push this fix to main to start a new workflow run;
+re-running the old run uses its old workflow revision, and re-running publishing
+in that run attempts the already-published contract version. Production deployment
+remains unverified locally.

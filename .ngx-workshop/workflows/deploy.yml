@@ -131,8 +131,8 @@ jobs:
               if not value or any(c in value for c in ("\r", "\n", "\0")):
                   raise SystemExit(f"Missing or invalid {name}")
 
-          if os.environ["PORT"] != "3003":
-              raise SystemExit("PORT must be 3003 for this deployment")
+          if os.environ["PORT"] != "3011":
+              raise SystemExit("PORT must be 3011 for this deployment")
 
           try:
               uri = urlsplit(os.environ["MONGODB_URI"])
@@ -222,13 +222,13 @@ jobs:
               --env-file .env \
               --network ngx-net \
               --restart unless-stopped \
-              -p 3003:3003 \
+              -p 3011:3011 \
               service-mcp-gateway
 
             attempt=0
             until docker exec service-mcp-gateway node -e '
               const net = require("node:net");
-              const socket = net.connect(3003, "127.0.0.1");
+              const socket = net.connect(3011, "127.0.0.1");
               socket.setTimeout(2000);
               socket.on("connect", () => {
                 socket.end();

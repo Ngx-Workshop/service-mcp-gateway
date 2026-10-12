@@ -19,7 +19,7 @@ HTTP → controller/guards/validation → service → Mongoose model → MongoDB
 
 | Concern | Source | Current behavior |
 | --- | --- | --- |
-| Runtime | `src/main.ts` | Cookies, global whitelist/forbid-extra-fields validation, port 3003 on `0.0.0.0` |
+| Runtime | `src/main.ts` | Cookies, global whitelist/forbid-extra-fields validation, port 3011 on `0.0.0.0` |
 | Configuration/database | `src/app.module.ts` | Global ConfigModule and `MONGODB_URI`; conditional DB imports |
 | Feature wiring | `src/example-crud/example-crud.module.ts` | Mongoose model, auth client, generation-only stub providers |
 | HTTP | `src/example-crud/example-crud.controller.ts` | `/example-crud` endpoints and Swagger metadata |
@@ -74,7 +74,7 @@ this checkout. Generated types describe shapes, not successful runtime integrati
 
 ## Runtime and release boundaries
 
-`MONGODB_URI` is needed for normal runtime; `PORT` defaults to 3003. Auth configuration
+`MONGODB_URI` is needed for normal runtime; `PORT` defaults to 3011. Auth configuration
 is consumed through the external auth client. `GENERATE_OPENAPI=true` is a build
 mode that bypasses database wiring and supplies stubs; it must be set before module
 evaluation. See the development guide for the current generator ordering caveat.
