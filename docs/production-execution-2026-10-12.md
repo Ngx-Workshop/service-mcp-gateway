@@ -1,9 +1,8 @@
 # Production launch evidence — 2026-10-12
 
 The user authorized infrastructure remediation, deployment and publication. Both
-services are deployed. Private ChatGPT plugin creation and hosted OAuth discovery succeeded. The owner
-is completing account sign-in/consent in the browser. Account linking and
-ChatGPT tool use remain unverified until that finishes.
+services are deployed. Private ChatGPT account linking, authenticated tool discovery
+and all three read-only tool calls passed with the owner's existing account.
 
 ## Public identities and client
 
@@ -119,10 +118,24 @@ discovery succeeded, selected the stable registered callback, and exposed the
 correct catalog:read scope and native endpoints. The private plugin was created
 with static client ngx-workshop-chatgpt-prod, token auth none and OIDC identity
 sharing disabled. “Continue to Ngx Workshop” opened the real auth-owned sign-in
-interaction. Owner account sign-in/consent is now pending; the earlier builder
-rejection is resolved. DNS/cache was only a hypothesis, not a proven root cause.
-Do not represent account linking or actual ChatGPT tool execution as completed
-until the owner finishes that flow. Never connect the deleted acceptance account.
+interaction. The owner completed sign-in and catalog:read consent. Chrome initially
+blocked the form callback; resuming the approved session completed ChatGPT's token
+exchange. The plugin then displayed its authenticated Read3 tool catalogue.
+A real ChatGPT verification conversation called all three tools successfully:
+
+- list_workshops(sectionId=angular): six public workshop summaries.
+- get_workshop(sectionId=angular, workshopId=6acaffbb4d4ddb09fe84ff6d):
+  What is Angular?, five ordered items (three pages, one lab, one assessment).
+- get_coding_lab(labId=6abca5763b2ecd0f16ae87fa): Sum an array — demo challenge,
+  version1 / 6abca5763b2ecd0f16ae8804, TypeScript, public starter/hint/sample test.
+
+The results matched public service-document/service-coding-labs reads.
+[Verify Ngx Workshop Tools](https://chatgpt.com/c/6acd6bbd-1b60-83e9-8bc5-02e31dc5cc94)
+is the owner's private verification conversation, not a publicly shared link.
+No web search, mutations, hidden tests or solutions were involved. The deleted
+acceptance account was never connected. The earlier builder rejection is resolved;
+DNS/cache was only a hypothesis, not a proven root cause. Existing600-second
+access-token lifetime and no-refresh policy remain: later use may require reconnecting.
 
 Public acceptance runner: test/production-oauth.integration.mjs in the gateway.
 It requires an explicitly provisioned private MCP_TEST_LOGIN_FILE; it never prints
