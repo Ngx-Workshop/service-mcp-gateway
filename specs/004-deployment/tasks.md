@@ -1,5 +1,5 @@
 # Deployment tasks
-Status: Deployed/published; private ChatGPT linking open · 2026-10-12
+Status: Deployed/published; ChatGPT three-tool acceptance passed · 2026-10-12
 
 - [x] P001: Inventory workflow/container/edge/database docs and production runtime gaps; record verified sources and unknowns in research.md.
 - [x] P002: Add coordinated specs, config/ownership handoff, proposed ADRs, release/rollback order and acceptance gates; validate docs without altering deploy assets.
@@ -59,8 +59,8 @@ older consumers until their own TLS migration; auth requires verified TLS.
 - [x] X003: Persistent OAuth keys, exact ChatGPT client, encrypted private backhaul and private-only bindings.
 - [x] X004: Validated versioned images; gated CI/publication and reviewed commits.
 - [x] X005: Activate services/edge/DNS; public SDK tools, revocation, legacy and rollback acceptance.
-- [ ] X006: Link private ChatGPT connection and record remaining account-specific constraints.
+- [x] X006: Link private ChatGPT connection and record remaining account-specific constraints.
 
 ## Launch acceptance evidence
 
-X001–X005 completed; [immutable release, infrastructure, recovery and public acceptance evidence](../../docs/production-execution-2026-10-12.md). X006 remains open: private plugin creation/discovery succeeded; owner sign-in/consent is pending. Historical T-items above combine broader rotation/client journeys; do not imply those unexercised portions were completed. No production key regeneration or live DB restore occurred.
+X001–X005 completed; [immutable release, infrastructure, recovery and public acceptance evidence](../../docs/production-execution-2026-10-12.md). X006 completed: owner sign-in/consent, authenticated tool discovery and all three ChatGPT read-only calls passed. Historical T-items above combine broader rotation/client journeys; do not imply those unexercised portions were completed. No production key regeneration or live DB restore occurred.
