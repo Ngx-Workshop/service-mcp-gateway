@@ -1,5 +1,5 @@
 # Implementation and rollout plan
-Status: Readiness implementation verified locally; release and infrastructure work deferred · 2026-10-12
+Status: Deployed/published; owner ChatGPT sign-in pending · 2026-10-12
 Inventory: [research.md](research.md) · Requirements: [spec.md](spec.md)
 
 ## Boundaries and concrete changes
