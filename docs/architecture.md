@@ -1,6 +1,6 @@
 # Architecture
 
-Updated: 2026-10-12 · Local catalog proof of concept.
+Updated: 2026-10-12 · Deployed catalog gateway; private ChatGPT linking open.
 
 ## Responsibilities and flow
 
@@ -44,7 +44,7 @@ Runtime compatibility passed against both contract-shaped HTTP doubles and real
 local MongoDB-backed owner services. The [live integration handoff](../specs/002-live-catalog-integration/handoff.md)
 records five sections, eleven workshops and one published lab using modern and
 legacy clients. Unit/e2e tests need no sibling source; the opt-in live check needs
-running owners with nonempty local catalogs. Production connectivity remains unverified.
+running owners with nonempty local catalogs. Production integration also passed against all 6 real workshops and 2 published labs; see [launch evidence](production-execution-2026-10-12.md).
 
 ## Security and future boundaries
 
@@ -54,16 +54,14 @@ validates trusted introspection without cookie fallback, JWT decoding or cached
 identity. Public domain GETs remain credential-free; roles imply no catalog scope.
 The gateway has no auth DB access or signing secret. Protected-resource metadata
 uses explicit configured identities, never inbound Host or forwarded headers.
-The local auth-client artifact needs no sibling checkout at runtime.
+The gateway pins published @tmdjr/ngx-auth-client 0.0.66 and needs no sibling checkout at runtime.
 
 Local loopback binding and Host/Origin checks remain; explicit production uses exact trusted proxy IPs and normalized HTTPS authority. Explicit
 local-public is for local regression tests only. OAuth errors occur before body
 parsing/tool calls. CIMD HTTPS fetch protections belong to service-auth; runtime
 has no test bypass for private addresses or TLS verification.
 
-Docker and Actions now implement production-readiness gates; Nginx remains unchanged. Public HTTPS identities/callbacks,
-proxy/host/origin/CORS policy, production Mongo and secret/key operations, traffic
-controls and hosted-client connections require the next deployment phase.
+Docker/Actions gates and dedicated Nginx native HTTPS routing are deployed. Public identities, exact callbacks, verified private backhaul, scoped Mongo and persistent secrets are in operation. Private ChatGPT account linking remains unverified; distributed traffic controls and an audit backend are future work.
 
 ## Contracts and migration
 
@@ -75,11 +73,10 @@ export can replace those validators independently of the MCP contract.
 The gateway contracts package now uses openapi-typescript plus generated aliases
 and runtime JSON Schema metadata. Opaque sample input/expected values remain
 unknown, avoiding generated any. This is a breaking replacement of seed CRUD
-exports; release version and external consumer migration are future decisions.
-No contract publishing occurred. See [ADRs](adr/README.md).
+exports; @tmdjr/service-mcp-gateway-contracts 1.0.0 is published with this intentional break. Consumers of seed CRUD must migrate. See [ADRs](adr/README.md).
 
 ## Production readiness
 
 See the [runbook](production-readiness.md) and [handoff](../specs/004-deployment/handoff.md).
 Production bootstrap verifies owner responses and authorization-server discovery
-before listening. Public infrastructure and rollout remain deferred.
+before listening. See [actual launch evidence](production-execution-2026-10-12.md) for deployed versions and the remaining ChatGPT client gap.

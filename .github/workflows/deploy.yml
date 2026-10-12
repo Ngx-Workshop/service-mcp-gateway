@@ -30,6 +30,7 @@ jobs:
       - name: Install and validate gateway and contracts
         run: |
           npm ci --ignore-scripts
+          npm audit --omit=dev --audit-level=high
           npm run build
           npm test -- --runInBand
           npm run test:e2e -- --runInBand
