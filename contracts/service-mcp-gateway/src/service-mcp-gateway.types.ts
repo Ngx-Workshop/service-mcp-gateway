@@ -4,163 +4,121 @@
  */
 
 export interface paths {
-    "/mcp-gateway/hello-world": {
+    "/.well-known/oauth-protected-resource/mcp": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["ExampleCrudController_helloWorld"];
+        /** OAuth protected MCP resource metadata */
+        get: operations["OAuthMetadataController_metadata"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/mcp-gateway/auth-test": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ExampleCrudController_authTest"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/mcp-gateway": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ExampleCrudController_findAll"];
-        put?: never;
-        post: operations["ExampleCrudController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/mcp-gateway/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ExampleCrudController_findOne"];
-        put?: never;
-        post?: never;
-        delete: operations["ExampleCrudController_remove"];
-        options?: never;
-        head?: never;
-        patch: operations["ExampleCrudController_update"];
-        trace?: never;
-    };
-    "/mcp-gateway/name/{name}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ExampleCrudController_findByName"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/mcp-gateway/{id}/archive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["ExampleCrudController_archive"];
-        trace?: never;
-    };
-    "/mcp-gateway/{id}/unarchive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["ExampleCrudController_unarchive"];
         trace?: never;
     };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        AuthTestDto: {
-            message: string;
+        OAuthResourceMetadataDto: {
+            resource: string;
+            authorization_servers: string[];
+            scopes_supported: string[];
+            bearer_methods_supported: string[];
         };
-        ExampleMongodbDocObjectDto: {
-            street: string;
-            city: string;
-            state: string;
-            zip: string;
+        ListWorkshopsInput: {
+            sectionId: string;
         };
-        CreateExampleMongodbDocDto: {
-            name: string;
-            /** @enum {string} */
-            type: "SOME_ENUM" | "SOME_OTHER_ENUM";
-            description?: string;
-            archived?: boolean;
-            exampleMongodbDocObject?: components["schemas"]["ExampleMongodbDocObjectDto"];
-            /** Format: date-time */
-            lastUpdated?: string;
+        GetWorkshopInput: {
+            sectionId: string;
+            workshopId: string;
         };
-        ExampleMongodbDocDto: {
-            _id: string;
-            name: string;
-            /** @enum {string} */
-            type: "SOME_ENUM" | "SOME_OTHER_ENUM";
-            version: number;
-            description: string;
-            /** Format: date-time */
-            lastUpdated: string;
-            archived: boolean;
-            exampleMongodbDocObject?: components["schemas"]["ExampleMongodbDocObjectDto"];
-            __v: number;
+        GetCodingLabInput: {
+            labId: string;
+            versionId?: string;
         };
-        UpdateExampleMongodbDocDto: {
-            name?: string;
-            /** @enum {string} */
-            type?: "SOME_ENUM" | "SOME_OTHER_ENUM";
-            description?: string;
-            archived?: boolean;
-            exampleMongodbDocObject?: components["schemas"]["ExampleMongodbDocObjectDto"];
-            /** Format: date-time */
-            lastUpdated?: string;
+        ListWorkshopsOutput: {
+            workshops: {
+                id: string;
+                sectionId: string;
+                title: string;
+                summary: string;
+                level: number;
+            }[];
+        };
+        GetWorkshopOutput: {
+            workshop: {
+                id: string;
+                sectionId: string;
+                title: string;
+                summary: string;
+                level: number;
+                outline: ({
+                    id: string;
+                    title: string;
+                    /** @enum {string} */
+                    kind: "PAGE";
+                    resourceId: string;
+                } | {
+                    id: string;
+                    title: string;
+                    /** @enum {string} */
+                    kind: "CODING_LAB";
+                    resourceId: string;
+                } | {
+                    id: string;
+                    title: string;
+                    /** @enum {string} */
+                    kind: "ASSESSMENT_TEST";
+                    resourceId: string;
+                })[];
+            };
+        };
+        GetCodingLabOutput: {
+            lab: {
+                id: string;
+                versionId: string;
+                versionNumber: number;
+                title: string;
+                /** @enum {string} */
+                difficulty?: "intro" | "easy" | "medium" | "hard";
+                /** @enum {string} */
+                language: "javascript" | "typescript";
+                promptMarkdown: string;
+                hints: string[];
+                starterCode: string;
+                sampleTests: {
+                    name: string;
+                    /** @enum {string} */
+                    kind: "io" | "unit";
+                    input?: unknown;
+                    expected?: unknown;
+                    comparator?: {
+                        /** @enum {string} */
+                        kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                        tolerance?: number;
+                        normalizeWhitespace?: boolean;
+                        ignoreCase?: boolean;
+                        customComparatorId?: string;
+                    };
+                    testCode?: string;
+                    /** @enum {string} */
+                    framework?: "jest" | "vitest";
+                }[];
+                entryFnName?: string;
+            };
+        };
+        ToolError: {
+            error: {
+                /** @enum {string} */
+                code: "NOT_FOUND" | "FORBIDDEN" | "UPSTREAM_TIMEOUT" | "UPSTREAM_UNAVAILABLE" | "UPSTREAM_INVALID_RESPONSE" | "INTERNAL_ERROR";
+                message: string;
+            };
         };
     };
     responses: never;
@@ -171,7 +129,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    ExampleCrudController_helloWorld: {
+    OAuthMetadataController_metadata: {
         parameters: {
             query?: never;
             header?: never;
@@ -185,199 +143,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
-                };
-            };
-        };
-    };
-    ExampleCrudController_authTest: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthTestDto"];
-                };
-            };
-        };
-    };
-    ExampleCrudController_findAll: {
-        parameters: {
-            query?: {
-                /** @description Filter by archived status */
-                archived?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExampleMongodbDocDto"][];
-                };
-            };
-        };
-    };
-    ExampleCrudController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateExampleMongodbDocDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExampleMongodbDocDto"];
-                };
-            };
-        };
-    };
-    ExampleCrudController_findOne: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExampleMongodbDocDto"];
-                };
-            };
-        };
-    };
-    ExampleCrudController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ExampleCrudController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateExampleMongodbDocDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExampleMongodbDocDto"];
-                };
-            };
-        };
-    };
-    ExampleCrudController_findByName: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExampleMongodbDocDto"];
-                };
-            };
-        };
-    };
-    ExampleCrudController_archive: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExampleMongodbDocDto"];
-                };
-            };
-        };
-    };
-    ExampleCrudController_unarchive: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExampleMongodbDocDto"];
+                    "application/json": components["schemas"]["OAuthResourceMetadataDto"];
                 };
             };
         };

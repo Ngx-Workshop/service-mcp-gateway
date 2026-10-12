@@ -1,7 +1,7 @@
 {
   "name": "@tmdjr/service-mcp-gateway-contracts",
-  "version": "0.0.1",
-  "description": "Types & runtime enums generated from NGX service-mcp-gateway spec",
+  "version": "1.0.0",
+  "description": "Independent tool input/output models and runtime JSON Schemas for the NGX Workshop MCP catalog",
   "license": "MIT",
   "private": false,
   "type": "module",
@@ -15,17 +15,16 @@
     "access": "public"
   },
   "scripts": {
-    "clean": "rm -rf dist src/service-mcp-gateway.types.ts src/models src/core src/schemas",
+    "clean": "rm -rf dist src/service-mcp-gateway.types.ts src/models src/core src/schemas src/mcp-tools.json src/mcp-tools.ts",
     "gen:types": "openapi-typescript ../../openapi.json --output ./src/service-mcp-gateway.types.ts",
-    "gen:models": "openapi --input ../../openapi.json --output ./src --client none --exportCore false --exportServices false --exportModels true --useUnionTypes true",
+    "gen:models": "node ../../scripts/export-mcp-contracts.cjs",
     "gen": "npm run gen:types && npm run gen:models",
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run clean && npm run gen && npm run build"
   },
   "devDependencies": {
     "openapi-typescript": "^7.5.1",
-    "typescript": "^5.7.3",
-    "openapi-typescript-codegen": "^0.29.0"
+    "typescript": "^5.7.3"
   },
   "repository": {
     "type": "git",

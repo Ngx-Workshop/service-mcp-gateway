@@ -1,5 +1,1 @@
-/* generated using openapi-typescript-codegen -- do not edit */
-/* istanbul ignore file */
-/* tslint:disable */
-/* eslint-disable */
-export {};
+export { mcpCatalogContract } from './mcp-tools.js';

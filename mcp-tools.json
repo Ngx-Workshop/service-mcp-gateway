@@ -1,0 +1,468 @@
+{
+  "name": "ngx-workshop-catalog",
+  "version": "0.1.0",
+  "tools": [
+    {
+      "name": "list_workshops",
+      "description": "List public workshop summaries in a section. This catalog does not determine learner eligibility.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "sectionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "sectionId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "workshops": {
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "sectionId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "title": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "summary": {
+                  "type": "string",
+                  "maxLength": 20000
+                },
+                "level": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "id",
+                "sectionId",
+                "title",
+                "summary",
+                "level"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "workshops"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_workshop",
+      "description": "Get public workshop metadata and its ordered learning outline within a section. Does not return document bodies or learner progress.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "sectionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "workshopId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "sectionId",
+          "workshopId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "workshop": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "sectionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "summary": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "outline": {
+                "maxItems": 500,
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "title": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "kind": {
+                          "type": "string",
+                          "const": "PAGE"
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "kind",
+                        "resourceId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "title": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "kind": {
+                          "type": "string",
+                          "const": "CODING_LAB"
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "kind",
+                        "resourceId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "title": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "kind": {
+                          "type": "string",
+                          "const": "ASSESSMENT_TEST"
+                        },
+                        "resourceId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "kind",
+                        "resourceId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "sectionId",
+              "title",
+              "summary",
+              "level",
+              "outline"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "workshop"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_coding_lab",
+      "description": "Get a published coding challenge, starter code, hints and public sample tests. Optionally select a published version; no solutions or hidden tests.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "labId": {
+            "type": "string",
+            "pattern": "^[a-f\\d]{24}$"
+          },
+          "versionId": {
+            "type": "string",
+            "pattern": "^[a-f\\d]{24}$"
+          }
+        },
+        "required": [
+          "labId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "lab": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-f\\d]{24}$"
+              },
+              "versionId": {
+                "type": "string",
+                "pattern": "^[a-f\\d]{24}$"
+              },
+              "versionNumber": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "difficulty": {
+                "type": "string",
+                "enum": [
+                  "intro",
+                  "easy",
+                  "medium",
+                  "hard"
+                ]
+              },
+              "language": {
+                "type": "string",
+                "enum": [
+                  "javascript",
+                  "typescript"
+                ]
+              },
+              "promptMarkdown": {
+                "type": "string",
+                "maxLength": 100000
+              },
+              "hints": {
+                "maxItems": 100,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 20000
+                }
+              },
+              "starterCode": {
+                "type": "string",
+                "maxLength": 100000
+              },
+              "sampleTests": {
+                "maxItems": 100,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "io",
+                        "unit"
+                      ]
+                    },
+                    "input": {},
+                    "expected": {},
+                    "comparator": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "deepEqual",
+                            "strictEqual",
+                            "numberTolerance",
+                            "stringNormalized",
+                            "custom"
+                          ]
+                        },
+                        "tolerance": {
+                          "type": "number"
+                        },
+                        "normalizeWhitespace": {
+                          "type": "boolean"
+                        },
+                        "ignoreCase": {
+                          "type": "boolean"
+                        },
+                        "customComparatorId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "testCode": {
+                      "type": "string",
+                      "maxLength": 50000
+                    },
+                    "framework": {
+                      "type": "string",
+                      "enum": [
+                        "jest",
+                        "vitest"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "kind"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "entryFnName": {
+                "type": "string",
+                "maxLength": 200
+              }
+            },
+            "required": [
+              "id",
+              "versionId",
+              "versionNumber",
+              "title",
+              "language",
+              "promptMarkdown",
+              "hints",
+              "starterCode",
+              "sampleTests"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "lab"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "errorSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "NOT_FOUND",
+              "FORBIDDEN",
+              "UPSTREAM_TIMEOUT",
+              "UPSTREAM_UNAVAILABLE",
+              "UPSTREAM_INVALID_RESPONSE",
+              "INTERNAL_ERROR"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "error"
+    ],
+    "additionalProperties": false
+  }
+}
