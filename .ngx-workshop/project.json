@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "kind": "service",
+  "name": "service-mcp-gateway",
+  "org": "Ngx-Workshop",
+  "seed": "seed-service-nestjs",
+  "port": 3011,
+  "apiPrefix": "mcp-gateway",
+  "contractsPackage": "@tmdjr/service-mcp-gateway-contracts"
+}
