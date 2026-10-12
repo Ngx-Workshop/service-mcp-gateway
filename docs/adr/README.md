@@ -22,3 +22,5 @@ Deployment planning adds proposed decisions (no runtime/deploy asset changes):
 
 See [deployment planning handoff](../../specs/004-deployment/handoff.md). Neither
 ADR authorizes a workflow run or rollout.
+
+Production decisions are implemented after user authorization; see [actual launch evidence](../production-execution-2026-10-12.md). Private ChatGPT linking remains open.

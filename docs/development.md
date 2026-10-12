@@ -51,14 +51,12 @@ JSON-RPC tool is not a REST operation.
 ## Limits and remaining phase work
 
 Real local owner integration passed; see the [handoff](../specs/002-live-catalog-integration/handoff.md).
-Local OAuth is implemented; deployment, distributed rate limiting and an audit backend remain deferred. Legacy support is stateless; clients requiring sessions or standalone
+OAuth and deployment are implemented; private ChatGPT linking, distributed rate limiting and an audit backend remain open. Legacy support is stateless; clients requiring sessions or standalone
 GET SSE streams are unsupported. Results over the documented limits are rejected;
 producer pagination is needed before supporting large catalogs. JSON sample-test
 inputs/expected values are service-owned opaque data, not executable code.
 
-The package manifest version has not been released or reconciled with published
-0.0.5. Existing deployment workflows, Docker and Nginx settings still need a
-separate review. Do not push this as a production rollout without that phase.
+Contracts 1.0.0 and auth-client 0.0.66 are published; reviewed CI images and Nginx are deployed. Publication and rollout remain separate explicit operations. See [launch evidence](production-execution-2026-10-12.md).
 Dependency-install audit findings are recorded in the handoff; no broad npm
 upgrade/audit-fix was attempted as part of this feature.
 

@@ -114,6 +114,11 @@ try {
   const metadata = await discovery.json();
   assert.equal(metadata.issuer, issuer);
   assert.equal(metadata.authorization_response_iss_parameter_supported, true);
+  assert.deepEqual(metadata.scopes_supported, ['catalog:read']);
+  assert.deepEqual(metadata.token_endpoint_auth_methods_supported.sort(), [
+    'client_secret_basic',
+    'none',
+  ]);
   const protectedMetadata = await (
     await request(
       'https://mcp.ngx-workshop.io/.well-known/oauth-protected-resource/mcp'
@@ -224,6 +229,39 @@ try {
       );
     console.log('Immediate public token revocation enforcement PASS.');
   }
+
+  stage = 'browser grant revocation';
+  const browserSession = await mint();
+  const grantsPage = await request(issuer + '/oauth/grants', {
+    headers: { cookie: browserSession.cookie },
+  });
+  assert.equal(grantsPage.status, 200);
+  const html = await grantsPage.text();
+  const forms = [
+    ...html.matchAll(
+      /<form[^>]*>.*?name="csrf" value="([^"]+)".*?name="grant" value="([^"]+)"/gs
+    ),
+  ];
+  assert(forms.length > 0);
+  for (const form of forms) {
+    const response = await request(issuer + '/oauth/grants', {
+      method: 'POST',
+      headers: { cookie: browserSession.cookie, origin: issuer },
+      body: new URLSearchParams({ csrf: form[1], grant: form[2] }),
+    });
+    assert.equal(response.status, 303);
+  }
+  assert.equal(
+    (
+      await request(resource, {
+        method: 'POST',
+        headers: { authorization: 'Bearer ' + browserSession.token },
+        body: 'bad-json',
+      })
+    ).status,
+    401
+  );
+  console.log('Public browser grant revocation enforcement PASS.');
   stage = 'denied consent issuer binding';
   await mint(true);
   console.log('Production acceptance PASS.');
