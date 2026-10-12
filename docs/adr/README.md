@@ -24,3 +24,5 @@ See [deployment planning handoff](../../specs/004-deployment/handoff.md). Neithe
 ADR authorizes a workflow run or rollout.
 
 Production decisions are implemented after user authorization; see [actual launch evidence](../production-execution-2026-10-12.md). Private ChatGPT linking remains open.
+
+- [0009 — Runtime dependency release gate](0009-runtime-dependency-gate.md)
