@@ -1,3 +1,7 @@
+import {
+  publishingDefinitions,
+  publishingContractSchemas,
+} from './publishing/publishing.schemas';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'node:fs';
@@ -7,6 +11,7 @@ import { catalogDefinitions, contractSchemas } from './tools/catalog.schemas';
 
 async function generate() {
   // Generation has no network/database effects and uses explicit placeholder configuration.
+  process.env.PUBLISHING_ENABLED = 'false';
   process.env.RUNTIME_PROFILE = 'local';
   process.env.NODE_ENV = 'development';
   process.env.MCP_AUTH_MODE = 'local-public';
@@ -29,10 +34,12 @@ async function generate() {
         .build()
     );
     const schemas = Object.fromEntries(
-      Object.entries(contractSchemas).map(([name, schema]) => [
-        name,
-        z.toJSONSchema(schema, { target: 'openapi-3.0' }),
-      ])
+      Object.entries({ ...contractSchemas, ...publishingContractSchemas }).map(
+        ([name, schema]) => [
+          name,
+          z.toJSONSchema(schema, { target: 'openapi-3.0', io: 'input' }),
+        ]
+      )
     );
     const artifact = {
       name: 'ngx-workshop-catalog',
@@ -44,6 +51,17 @@ async function generate() {
         inputSchema: z.toJSONSchema(definition.inputSchema),
         outputSchema: z.toJSONSchema(definition.outputSchema),
       })),
+      publishing: {
+        endpoint: '/mcp/publishing',
+        authentication: 'platform administrator bearer',
+        tools: Object.entries(publishingDefinitions).map(([name, d]) => ({
+          name,
+          description: d.description,
+          annotations: d.annotations,
+          inputSchema: z.toJSONSchema(d.inputSchema, { io: 'input' }),
+          outputSchema: z.toJSONSchema(d.outputSchema),
+        })),
+      },
       errorSchema: z.toJSONSchema(contractSchemas.ToolError),
     };
     writeFileSync(

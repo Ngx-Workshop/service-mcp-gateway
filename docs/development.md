@@ -108,3 +108,6 @@ changes, verification and rollback gates. Planning is complete; implementation
 and deployment remain pending. Current loopback restrictions and delivery assets
 are unchanged. Proposed domains and live infrastructure state require verification
 before later release work.
+
+## Workshop publishing
+See [configuration and recovery](workshop-publishing.md). The normal test suite includes publishing tests; protocol e2e includes the separate admin endpoint. Tests use doubles and temporary receipts, never real workshops or paid model calls.

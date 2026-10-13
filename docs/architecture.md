@@ -6,7 +6,7 @@ Updated: 2026-10-12 · Deployed catalog gateway; private ChatGPT linking open.
 
 MCP HTTP → auth-client introspection + SDK bearer gate → official SDK → injected tool callback → catalog adapter → owning REST
 service. This gateway owns AI-facing contracts and transport only. It has no
-MongoDB connection and cannot write domain records. The old example CRUD module
+MongoDB connection; authoring writes use owning REST APIs through the separate administrator endpoint. The old example CRUD module
 has been removed.
 
 | Concern | Source | Behavior |
@@ -45,6 +45,10 @@ local MongoDB-backed owner services. The [live integration handoff](../specs/002
 records five sections, eleven workshops and one published lab using modern and
 legacy clients. Unit/e2e tests need no sibling source; the opt-in live check needs
 running owners with nonempty local catalogs. Production integration also passed against all 6 real workshops and 2 published labs; see [launch evidence](production-execution-2026-10-12.md).
+
+## Administrator publishing
+
+See [workshop publishing](workshop-publishing.md) for the separate /mcp/publishing endpoint, browser facade, editor contracts, model generator, owner adapters and durable receipts. Catalog behavior remains unchanged.
 
 ## Security and future boundaries
 

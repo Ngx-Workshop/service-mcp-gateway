@@ -1,0 +1,15 @@
+# Workshop publishing handoff
+
+Status: Implemented; live integration and deployment pending. Date: 2026-10-12.
+
+Implemented: separate administrator-only MCP publishing tools and matching browser facade; strict editor/draft/CRUD schemas; owner API adapters; server-side OpenAI draft generation with verified uploader image context; sequential workshop/page/lab-verification/assessment assembly; durable receipts and duplicate/uncertain-write protection; publisher section lookup, brief/import/review/edit/publish/receipt interface. Existing catalog OAuth remains read-only.
+
+Changed repositories: service-mcp-gateway, mfe-user-journey-admin-ai-publisher, nginx-ngx-workshop.io. Existing domain owner APIs already support the needed operations; no owner database or owner service implementation changes were required. Gateway contracts 1.1.0 generated and built; MFE consumes a committed vendor tarball and has no sibling runtime/build dependency. Registry package has not been published.
+
+Verification: gateway build, contract generation/build, non-mutating lint, 61 unit/HTTP-adapter tests, 43 protocol/production/OAuth e2e tests; publisher production build, architecture checks, strict source/test type checks and 33 ChromeHeadless tests. Browser layout inspected on a temporary local preview. Native HTTPS and backhaul nginx syntax checked with temporary certs without starting/reloading production nginx. Model tests use synthetic responses; owner/auth tests use disposable doubles. Provided 23-block editor object and actual multipart upload bytes covered.
+
+Scope limits: no paid live model call; no live MongoDB-backed publishing, Spaces storage or lab-runner acceptance; no production deployment, package registry publication or credentials provisioning. Publishing is not an atomic cross-service transaction: partial resources can be visible. Receipts require preserved durable storage, and deployment currently supports one gateway instance. Recovery is explicit CRUD reconciliation rather than automatic resume or rollback. A failed/timed-out create must be inspected before another request ID is used. Model drafting has no automatic retry.
+
+Exact next steps: privately configure PUBLISHING_ENABLED, owner URLs, AUTH_BASE_URL, absolute journal storage and server-only OPENAI_API_KEY/PUBLISHING_MODEL; preserve the publisher-runs volume; deploy gateway/MFE plus both proxy files together after authorization. Use an administrator account to generate/review/publish a disposable workshop, open documentation in the document editor, complete a lab and assessment, inspect receipt/resources, and explicitly clean up independently owned resources. External publishing agents connect to /mcp/publishing with a validated platform administrator bearer and a >=180-second tool timeout; catalog OAuth does not grant publishing permission.
+
+Detailed gateway configuration, authentication, source/type discrepancies, image handling and recovery: service-mcp-gateway/docs/workshop-publishing.md. Dependency installs reported existing/audited dependency-tree findings (gateway 46, MFE 41); no broad dependency upgrade was performed.

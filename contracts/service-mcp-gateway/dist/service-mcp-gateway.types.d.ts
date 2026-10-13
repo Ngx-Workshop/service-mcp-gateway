@@ -119,6 +119,524 @@ export interface components {
                 message: string;
             };
         };
+        WorkshopDraft: {
+            sectionId: string;
+            name: string;
+            summary: string;
+            level: number;
+            pages: {
+                name: string;
+                blocks: {
+                    blockId: string;
+                    sortIndex: number;
+                    /** @enum {string} */
+                    componentInstanceName: "HeaderBlockComponent" | "ParagraphBlockComponent" | "NgxEditorJs2BlockquotesComponent" | "NgxEditorJs2PanelComponent" | "NgxEditorJs2ImageComponent" | "NgxEditorJs2CodemirrorComponent" | "NgxEditorJs2MermaidjsComponent" | "NgxEditorJs2PopQuizComponent";
+                    savedAction: string;
+                    dataClean: string;
+                }[];
+            }[];
+            labs: {
+                metadata: {
+                    title: string;
+                    slug: string;
+                    summary: string;
+                    /** @enum {string} */
+                    difficulty: "intro" | "easy" | "medium" | "hard";
+                };
+                version: {
+                    /** @enum {string} */
+                    language: "javascript" | "typescript";
+                    promptMarkdown: string;
+                    hints: string[];
+                    starterCode: string;
+                    referenceSolution: {
+                        code: string;
+                    };
+                    sampleTests: {
+                        name: string;
+                        /** @enum {string} */
+                        kind: "io" | "unit";
+                        input?: unknown;
+                        expected?: unknown;
+                        comparator?: {
+                            /** @enum {string} */
+                            kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                            tolerance?: number;
+                            normalizeWhitespace?: boolean;
+                            ignoreCase?: boolean;
+                            customComparatorId?: string;
+                        };
+                        testCode?: string;
+                        /** @enum {string} */
+                        framework?: "jest" | "vitest";
+                    }[];
+                    hiddenTests: {
+                        name: string;
+                        /** @enum {string} */
+                        kind: "io" | "unit";
+                        input?: unknown;
+                        expected?: unknown;
+                        comparator?: {
+                            /** @enum {string} */
+                            kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                            tolerance?: number;
+                            normalizeWhitespace?: boolean;
+                            ignoreCase?: boolean;
+                            customComparatorId?: string;
+                        };
+                        testCode?: string;
+                        /** @enum {string} */
+                        framework?: "jest" | "vitest";
+                    }[];
+                    runner: {
+                        timeoutMs: number;
+                        entryFnName: string;
+                    };
+                };
+            }[];
+            assessment: {
+                name: string;
+                subject: string;
+                sectionTitle?: string;
+                level: number;
+                testQuestions: {
+                    question: string;
+                    choices: {
+                        value: string;
+                    }[];
+                    answer: string;
+                    correctResponse: string;
+                    incorrectResponse: string;
+                }[];
+            };
+        };
+        PublishingReceipt: {
+            /** Format: uuid */
+            requestId: string;
+            subject: string;
+            draftHash: string;
+            /** @enum {string} */
+            status: "running" | "complete" | "needs_recovery";
+            steps: {
+                name: string;
+                /** @enum {string} */
+                status: "pending" | "complete";
+                result?: unknown;
+            }[];
+            message?: string;
+        };
+        ManageDocumentInput: {
+            /** @enum {string} */
+            operation: "sections";
+        } | {
+            /** @enum {string} */
+            operation: "workshops";
+            sectionId: string;
+        } | {
+            /** @enum {string} */
+            operation: "read_page";
+            id: string;
+        } | {
+            /** @enum {string} */
+            operation: "create_workshop";
+            sectionId: string;
+            name: string;
+            summary: string;
+            level: number;
+        } | {
+            /** @enum {string} */
+            operation: "update_workshop";
+            id: string;
+            name: string;
+            summary: string;
+            level: number;
+        } | {
+            /** @enum {string} */
+            operation: "delete_workshop";
+            id: string;
+        } | {
+            /** @enum {string} */
+            operation: "create_page";
+            workshopId: string;
+            name: string;
+            blocks: {
+                blockId: string;
+                sortIndex: number;
+                /** @enum {string} */
+                componentInstanceName: "HeaderBlockComponent" | "ParagraphBlockComponent" | "NgxEditorJs2BlockquotesComponent" | "NgxEditorJs2PanelComponent" | "NgxEditorJs2ImageComponent" | "NgxEditorJs2CodemirrorComponent" | "NgxEditorJs2MermaidjsComponent" | "NgxEditorJs2PopQuizComponent";
+                savedAction: string;
+                dataClean: string;
+            }[];
+        } | {
+            /** @enum {string} */
+            operation: "update_page";
+            id: string;
+            blocks: {
+                blockId: string;
+                sortIndex: number;
+                /** @enum {string} */
+                componentInstanceName: "HeaderBlockComponent" | "ParagraphBlockComponent" | "NgxEditorJs2BlockquotesComponent" | "NgxEditorJs2PanelComponent" | "NgxEditorJs2ImageComponent" | "NgxEditorJs2CodemirrorComponent" | "NgxEditorJs2MermaidjsComponent" | "NgxEditorJs2PopQuizComponent";
+                savedAction: string;
+                dataClean: string;
+            }[];
+        } | {
+            /** @enum {string} */
+            operation: "rename_page";
+            id: string;
+            workshopId: string;
+            name: string;
+        } | {
+            /** @enum {string} */
+            operation: "delete_page";
+            id: string;
+            workshopId: string;
+            name: string;
+        } | {
+            /** @enum {string} */
+            operation: "add_reference";
+            workshopId: string;
+            /** @enum {string} */
+            kind: "CODING_LAB" | "ASSESSMENT_TEST";
+            resourceId: string;
+            name: string;
+        };
+        ManageAssessmentInput: {
+            /** @enum {string} */
+            operation: "list";
+        } | {
+            /** @enum {string} */
+            operation: "read";
+            id: string;
+        } | {
+            /** @enum {string} */
+            operation: "create";
+            assessment: {
+                name: string;
+                subject: string;
+                sectionTitle?: string;
+                level: number;
+                testQuestions: {
+                    question: string;
+                    choices: {
+                        value: string;
+                    }[];
+                    answer: string;
+                    correctResponse: string;
+                    incorrectResponse: string;
+                }[];
+            };
+        } | {
+            /** @enum {string} */
+            operation: "update";
+            id: string;
+            version: number;
+            assessment: {
+                name: string;
+                subject: string;
+                sectionTitle?: string;
+                level: number;
+                testQuestions: {
+                    question: string;
+                    choices: {
+                        value: string;
+                    }[];
+                    answer: string;
+                    correctResponse: string;
+                    incorrectResponse: string;
+                }[];
+            };
+        } | {
+            /** @enum {string} */
+            operation: "delete";
+            id: string;
+        };
+        ManageCodingLabInput: {
+            /** @enum {string} */
+            operation: "list";
+        } | {
+            /** @enum {string} */
+            operation: "read";
+            id: string;
+        } | {
+            /** @enum {string} */
+            operation: "create";
+            workshopId: string;
+            metadata: {
+                title: string;
+                slug: string;
+                summary: string;
+                /** @enum {string} */
+                difficulty: "intro" | "easy" | "medium" | "hard";
+            };
+        } | {
+            /** @enum {string} */
+            operation: "update";
+            id: string;
+            metadata: {
+                title: string;
+                slug: string;
+                summary: string;
+                /** @enum {string} */
+                difficulty: "intro" | "easy" | "medium" | "hard";
+            };
+        } | {
+            /** @enum {string} */
+            operation: "delete";
+            id: string;
+        } | {
+            /** @enum {string} */
+            operation: "versions";
+            id: string;
+        } | {
+            /** @enum {string} */
+            operation: "read_version";
+            id: string;
+            versionId: string;
+        } | {
+            /** @enum {string} */
+            operation: "create_version";
+            id: string;
+            version: {
+                /** @enum {string} */
+                language: "javascript" | "typescript";
+                promptMarkdown: string;
+                hints: string[];
+                starterCode: string;
+                referenceSolution: {
+                    code: string;
+                };
+                sampleTests: {
+                    name: string;
+                    /** @enum {string} */
+                    kind: "io" | "unit";
+                    input?: unknown;
+                    expected?: unknown;
+                    comparator?: {
+                        /** @enum {string} */
+                        kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                        tolerance?: number;
+                        normalizeWhitespace?: boolean;
+                        ignoreCase?: boolean;
+                        customComparatorId?: string;
+                    };
+                    testCode?: string;
+                    /** @enum {string} */
+                    framework?: "jest" | "vitest";
+                }[];
+                hiddenTests: {
+                    name: string;
+                    /** @enum {string} */
+                    kind: "io" | "unit";
+                    input?: unknown;
+                    expected?: unknown;
+                    comparator?: {
+                        /** @enum {string} */
+                        kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                        tolerance?: number;
+                        normalizeWhitespace?: boolean;
+                        ignoreCase?: boolean;
+                        customComparatorId?: string;
+                    };
+                    testCode?: string;
+                    /** @enum {string} */
+                    framework?: "jest" | "vitest";
+                }[];
+                runner: {
+                    timeoutMs: number;
+                    entryFnName: string;
+                };
+            };
+        } | {
+            /** @enum {string} */
+            operation: "update_version";
+            id: string;
+            versionId: string;
+            expectedContentHash: string;
+            version: {
+                /** @enum {string} */
+                language: "javascript" | "typescript";
+                promptMarkdown: string;
+                hints: string[];
+                starterCode: string;
+                referenceSolution: {
+                    code: string;
+                };
+                sampleTests: {
+                    name: string;
+                    /** @enum {string} */
+                    kind: "io" | "unit";
+                    input?: unknown;
+                    expected?: unknown;
+                    comparator?: {
+                        /** @enum {string} */
+                        kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                        tolerance?: number;
+                        normalizeWhitespace?: boolean;
+                        ignoreCase?: boolean;
+                        customComparatorId?: string;
+                    };
+                    testCode?: string;
+                    /** @enum {string} */
+                    framework?: "jest" | "vitest";
+                }[];
+                hiddenTests: {
+                    name: string;
+                    /** @enum {string} */
+                    kind: "io" | "unit";
+                    input?: unknown;
+                    expected?: unknown;
+                    comparator?: {
+                        /** @enum {string} */
+                        kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                        tolerance?: number;
+                        normalizeWhitespace?: boolean;
+                        ignoreCase?: boolean;
+                        customComparatorId?: string;
+                    };
+                    testCode?: string;
+                    /** @enum {string} */
+                    framework?: "jest" | "vitest";
+                }[];
+                runner: {
+                    timeoutMs: number;
+                    entryFnName: string;
+                };
+            };
+        } | {
+            /** @enum {string} */
+            operation: "verify";
+            id: string;
+            versionId: string;
+        } | {
+            /** @enum {string} */
+            operation: "publish";
+            id: string;
+            versionId: string;
+            expectedContentHash: string;
+        };
+        WorkshopImageInput: {
+            /** @enum {string} */
+            operation: "find";
+            query: string;
+        } | {
+            /** @enum {string} */
+            operation: "upload";
+            name: string;
+            /** @enum {string} */
+            mediaType: "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+            base64: string;
+        };
+        EditorBlock: {
+            blockId: string;
+            sortIndex: number;
+            /** @enum {string} */
+            componentInstanceName: "HeaderBlockComponent" | "ParagraphBlockComponent" | "NgxEditorJs2BlockquotesComponent" | "NgxEditorJs2PanelComponent" | "NgxEditorJs2ImageComponent" | "NgxEditorJs2CodemirrorComponent" | "NgxEditorJs2MermaidjsComponent" | "NgxEditorJs2PopQuizComponent";
+            savedAction: string;
+            dataClean: string;
+        };
+        PublishingResult: {
+            data: unknown;
+        };
+        GenerateWorkshopDraftInput: {
+            brief: string;
+            sectionId: string;
+            level: number;
+        };
+        PublishWorkshopInput: {
+            /** Format: uuid */
+            requestId: string;
+            draft: {
+                sectionId: string;
+                name: string;
+                summary: string;
+                level: number;
+                pages: {
+                    name: string;
+                    blocks: {
+                        blockId: string;
+                        sortIndex: number;
+                        /** @enum {string} */
+                        componentInstanceName: "HeaderBlockComponent" | "ParagraphBlockComponent" | "NgxEditorJs2BlockquotesComponent" | "NgxEditorJs2PanelComponent" | "NgxEditorJs2ImageComponent" | "NgxEditorJs2CodemirrorComponent" | "NgxEditorJs2MermaidjsComponent" | "NgxEditorJs2PopQuizComponent";
+                        savedAction: string;
+                        dataClean: string;
+                    }[];
+                }[];
+                labs: {
+                    metadata: {
+                        title: string;
+                        slug: string;
+                        summary: string;
+                        /** @enum {string} */
+                        difficulty: "intro" | "easy" | "medium" | "hard";
+                    };
+                    version: {
+                        /** @enum {string} */
+                        language: "javascript" | "typescript";
+                        promptMarkdown: string;
+                        hints: string[];
+                        starterCode: string;
+                        referenceSolution: {
+                            code: string;
+                        };
+                        sampleTests: {
+                            name: string;
+                            /** @enum {string} */
+                            kind: "io" | "unit";
+                            input?: unknown;
+                            expected?: unknown;
+                            comparator?: {
+                                /** @enum {string} */
+                                kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                                tolerance?: number;
+                                normalizeWhitespace?: boolean;
+                                ignoreCase?: boolean;
+                                customComparatorId?: string;
+                            };
+                            testCode?: string;
+                            /** @enum {string} */
+                            framework?: "jest" | "vitest";
+                        }[];
+                        hiddenTests: {
+                            name: string;
+                            /** @enum {string} */
+                            kind: "io" | "unit";
+                            input?: unknown;
+                            expected?: unknown;
+                            comparator?: {
+                                /** @enum {string} */
+                                kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                                tolerance?: number;
+                                normalizeWhitespace?: boolean;
+                                ignoreCase?: boolean;
+                                customComparatorId?: string;
+                            };
+                            testCode?: string;
+                            /** @enum {string} */
+                            framework?: "jest" | "vitest";
+                        }[];
+                        runner: {
+                            timeoutMs: number;
+                            entryFnName: string;
+                        };
+                    };
+                }[];
+                assessment: {
+                    name: string;
+                    subject: string;
+                    sectionTitle?: string;
+                    level: number;
+                    testQuestions: {
+                        question: string;
+                        choices: {
+                            value: string;
+                        }[];
+                        answer: string;
+                        correctResponse: string;
+                        incorrectResponse: string;
+                    }[];
+                };
+            };
+        };
     };
     responses: never;
     parameters: never;

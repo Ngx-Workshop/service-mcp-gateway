@@ -15,8 +15,10 @@ services:
       RUNTIME_PROFILE: production
       LISTEN_HOST: 0.0.0.0
       MCP_AUTH_MODE: oauth
+      PUBLISHING_JOURNAL_DIRECTORY: /var/lib/ngx-publishing
       AUTH_INTROSPECTION_SECRET_FILE: /run/secrets/introspection
     volumes:
+      - publisher-runs:/var/lib/ngx-publishing
       - type: bind
         source: ${INTROSPECTION_SECRET_HOST_FILE:?Set persistent owner-only secret path}
         target: /run/secrets/introspection
@@ -26,3 +28,6 @@ services:
 networks:
   ngx-net:
     external: true
+
+volumes:
+  publisher-runs:

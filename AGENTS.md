@@ -19,7 +19,7 @@ Do not require sibling checkouts to work locally.
 - OAuth is authorized and implemented locally; require bearer access by default.
   Explicit local-public is for local regression tests only. Do not
   weaken local loopback binding or the explicit production profile checks.
-- Exactly three read-only tools currently exist. Do not confuse catalog metadata
+- Exactly three read-only tools exist on /mcp. Separate /mcp/publishing authoring tools require validated platform admin credentials; see docs/workshop-publishing.md. Do not confuse catalog metadata
   with learner eligibility or expose authoring models, solutions or hidden tests.
 - Use owning service APIs and published types; never access another service's DB.
 - Keep protocol, tools, service validation and projections separate. Incoming

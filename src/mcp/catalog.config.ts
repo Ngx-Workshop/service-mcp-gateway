@@ -1,3 +1,4 @@
+import { isAbsolute } from 'node:path';
 import { loadRuntimeProfile } from '../auth/runtime-profile';
 import { loadOAuthConfig } from '../auth/oauth.config';
 import { z } from 'zod';
@@ -44,9 +45,33 @@ export function loadCatalogConfig(environment: NodeJS.ProcessEnv) {
   return {
     documentBaseUrl: parsed.data.DOCUMENT_BASE_URL.replace(/\/$/, ''),
     codingLabsBaseUrl: parsed.data.CODING_LABS_BASE_URL.replace(/\/$/, ''),
+    publishing:
+      environment.PUBLISHING_ENABLED === 'true'
+        ? {
+            assessmentBaseUrl: upstreamUrl
+              .parse(environment.ASSESSMENT_BASE_URL)
+              .replace(/\/$/, ''),
+            uploaderBaseUrl: upstreamUrl
+              .parse(environment.UPLOADER_BASE_URL)
+              .replace(/\/$/, ''),
+            journalDirectory: z
+              .string()
+              .min(1)
+              .refine(
+                isAbsolute,
+                'Use an absolute publishing journal directory'
+              )
+              .parse(environment.PUBLISHING_JOURNAL_DIRECTORY),
+            model: environment.PUBLISHING_MODEL,
+            apiKey: environment.OPENAI_API_KEY,
+          }
+        : undefined,
     port: parsed.data.PORT,
     auth: loadOAuthConfig(environment),
     runtime: loadRuntimeProfile(environment),
   };
 }
-export type CatalogConfig = ReturnType<typeof loadCatalogConfig>;
+type LoadedConfig = ReturnType<typeof loadCatalogConfig>;
+export type CatalogConfig = Omit<LoadedConfig, 'publishing'> & {
+  publishing?: LoadedConfig['publishing'];
+};
