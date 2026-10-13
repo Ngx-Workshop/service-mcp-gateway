@@ -30,8 +30,10 @@ Do not require sibling checkouts to work locally.
 - Run behavior tests, strict build, contract build and non-mutating lint as
   appropriate. Distinguish disposable HTTP doubles from live external integration.
 - Update context docs and external consumer handoff for compatibility changes.
-- Production is deployed after explicit user authorization. Actions validates;
-  package publication is a separate manual action after validation. Never
-  reintroduce automatic rollout.
+- Main pushes and manual main runs automatically validate, publish contracts via
+  npm OIDC, and deploy the validated image. Pull requests validate only. Preserve
+  host-owned runtime secrets, private ingress and publishing receipts; see
+  docs/automatic-delivery.md. This user-authorized policy supersedes ADR 0008
+  and the former manual-only rollout gate.
 
 The lightweight Markdown workflow requires no installed Spec Kit or slash commands.

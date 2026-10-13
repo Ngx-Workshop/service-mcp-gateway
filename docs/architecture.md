@@ -84,3 +84,7 @@ exports; @tmdjr/service-mcp-gateway-contracts 1.0.0 is published with this inten
 See the [runbook](production-readiness.md) and [handoff](../specs/004-deployment/handoff.md).
 Production bootstrap verifies owner responses and authorization-server discovery
 before listening. See [actual launch evidence](production-execution-2026-10-12.md) for deployed versions and the remaining ChatGPT client gap.
+
+## Automatic delivery
+
+Main pushes validate, publish contracts via npm OIDC, then promote the exact validated Docker artifact. Deployment preserves the host-owned environment, private ingress and persistent publishing volume, checks readiness through the trusted proxy and restores the previous container on failure. See [delivery runbook](automatic-delivery.md).

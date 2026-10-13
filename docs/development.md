@@ -56,7 +56,7 @@ GET SSE streams are unsupported. Results over the documented limits are rejected
 producer pagination is needed before supporting large catalogs. JSON sample-test
 inputs/expected values are service-owned opaque data, not executable code.
 
-Contracts 1.0.0 and auth-client 0.0.66 are published; reviewed CI images and Nginx are deployed. Publication and rollout remain separate explicit operations. See [launch evidence](production-execution-2026-10-12.md).
+Contracts 1.0.0 and auth-client 0.0.66 are published; reviewed CI images and Nginx are deployed. Main now automatically validates, publishes contracts and deploys; see [automatic delivery](automatic-delivery.md). See [launch evidence](production-execution-2026-10-12.md).
 Dependency-install audit findings are recorded in the handoff; no broad npm
 upgrade/audit-fix was attempted as part of this feature.
 

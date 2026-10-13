@@ -1,20 +1,15 @@
-name: Validate and explicitly publish release
+name: Publish and deploy MCP gateway
 
 on:
   pull_request:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      publish:
-        description: Publish the validated package version through trusted OIDC
-        type: boolean
-        default: false
 permissions:
   contents: read
 concurrency:
-  group: readiness-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: gateway-${{ github.ref == 'refs/heads/main' && 'production' || github.ref }}
+  cancel-in-progress: false
 jobs:
   validate:
     runs-on: ubuntu-24.04
@@ -29,6 +24,8 @@ jobs:
           package-manager-cache: false
       - name: Install and validate gateway and contracts
         run: |
+          node --test scripts/test-publish-workflow.cjs
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts -p "test_deploy_production.py" -v
           npm ci --ignore-scripts
           npm audit --omit=dev --audit-level=high
           npm run build
@@ -39,7 +36,7 @@ jobs:
           npm run contracts:service-mcp-gateway:gen
           npm run contracts:service-mcp-gateway:build
           git diff --exit-code -- openapi.json mcp-tools.json contracts/service-mcp-gateway/src contracts/service-mcp-gateway/dist
-      - name: Build immutable candidate locally (never push)
+      - name: Build validated deployment image
         run: |
           docker build --label org.opencontainers.image.revision="$GITHUB_SHA" --tag service-mcp-gateway:candidate .
           docker image inspect service-mcp-gateway:candidate --format '{{.Id}}' > image-id.txt
@@ -47,20 +44,21 @@ jobs:
           docker run --rm --entrypoint sh service-mcp-gateway:candidate -c 'test ! -e /usr/src/app/.oauth-local && test ! -e /usr/src/app/.env && test ! -e /usr/src/app/secrets'
           docker save service-mcp-gateway:candidate > image.tar
           sha256sum image.tar > image.tar.sha256
-      - name: Retain candidate for review
+      - name: Retain validated deployment image
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: service-mcp-gateway-candidate-${{ github.sha }}
+          name: service-mcp-gateway-candidate-${{ github.run_id }}
           path: |
             image.tar
             image.tar.sha256
             image-id.txt
+          overwrite: true
           retention-days: 3
           if-no-files-found: error
 
   publish:
     needs: validate
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -86,4 +84,80 @@ jobs:
         working-directory: contracts/service-mcp-gateway
         env:
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org
-        run: npm publish --access public --provenance
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const { spawnSync } = require('node:child_process');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          if (pkg.name !== '@tmdjr/service-mcp-gateway-contracts') throw new Error('Unexpected package');
+          if (!/^\d+$/.test(process.env.GITHUB_RUN_NUMBER || '')) throw new Error('Invalid run number');
+          const [major, minor] = pkg.version.split('.');
+          const version = `${major}.${minor}.${process.env.GITHUB_RUN_NUMBER}`;
+          const existing = spawnSync('npm', ['view', `${pkg.name}@${version}`, '--json'], { encoding: 'utf8' });
+          if (existing.status === 0) {
+            if (JSON.parse(existing.stdout).gitHead !== process.env.GITHUB_SHA) {
+              throw new Error('Published version belongs to a different commit');
+            }
+            console.log(`Already published ${pkg.name}@${version} for this commit`);
+            process.exit(0);
+          }
+          let error;
+          try { error = JSON.parse(existing.stdout).error; } catch {}
+          if (error?.code !== 'E404') throw new Error('Cannot verify registry version availability');
+          const bump = spawnSync('npm', ['version', version, '--no-git-tag-version', '--allow-same-version'], { stdio: 'inherit' });
+          if (bump.status !== 0) process.exit(1);
+          const publish = spawnSync('npm', ['publish', '--access', 'public', '--provenance'], { stdio: 'inherit' });
+          process.exit(publish.status ?? 1);
+          NODE
+
+  deploy:
+    needs: [validate, publish]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Download this run's validated image
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: service-mcp-gateway-candidate-${{ github.run_id }}
+      - name: Check deployment credentials
+        env:
+          DROPLET_IP: ${{ secrets.DROPLET_IP }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST_FINGERPRINT: ${{ secrets.SSH_HOST_FINGERPRINT }}
+        run: |
+          python3 - <<'PY'
+          import os
+          for name in ('DROPLET_IP', 'SSH_PRIVATE_KEY', 'SSH_HOST_FINGERPRINT'):
+              if not os.environ.get(name):
+                  raise SystemExit(f'Missing deployment secret: {name}')
+          PY
+      - name: Copy validated image and deployment script
+        uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345
+        with:
+          version: '1.8.0'
+          host: ${{ secrets.DROPLET_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          fingerprint: ${{ secrets.SSH_HOST_FINGERPRINT }}
+          source: 'image.tar,image.tar.sha256,image-id.txt,scripts/deploy-production.py'
+          target: '/opt/ngx-nestjs-services/mcp-gateway/releases/${{ github.run_id }}-${{ github.run_attempt }}'
+          overwrite: true
+      - name: Promote image and verify gateway; restore previous container on failure
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2
+        with:
+          version: '1.8.2'
+          host: ${{ secrets.DROPLET_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          fingerprint: ${{ secrets.SSH_HOST_FINGERPRINT }}
+          command_timeout: 20m
+          script: |
+            set -eu
+            umask 077
+            cd '/opt/ngx-nestjs-services/mcp-gateway/releases/${{ github.run_id }}-${{ github.run_attempt }}'
+            chmod 700 .
+            flock -n /var/lock/ngx-mcp-gateway-deploy.lock python3 scripts/deploy-production.py '${{ github.sha }}' '${{ github.run_id }}-${{ github.run_attempt }}'

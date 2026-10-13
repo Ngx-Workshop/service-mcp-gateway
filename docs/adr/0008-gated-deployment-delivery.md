@@ -75,3 +75,7 @@ Nothing was provisioned, deployed or published.
 ## Authorized launch evidence — 2026-10-12
 
 Decision implemented in production after explicit user authorization. See [launch evidence](../production-execution-2026-10-12.md) for reviewed commits/images, persistent secrets, verified TLS/scoped storage, actual recovery/public acceptance and successful private plugin creation and pending owner account sign-in. Earlier no-deploy statements describe the historical phase.
+
+## Superseded delivery policy (2026-10-13)
+
+The user explicitly requested automatic main publication and deployment matching service-document. [Feature 006](../../specs/006-automatic-delivery/spec.md) and the [current runbook](../automatic-delivery.md) replace the manual-only delivery gate; runtime security and validation remain required.
