@@ -1,3 +1,5 @@
+import { z } from 'zod';
+import { generationSchema, formatGeneratedDraft } from './generation-format';
 import { readFileSync } from 'node:fs';
 import { DraftAgentService } from './draft-agent.service';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -29,6 +31,48 @@ const config = (directory: string) =>
     UPLOADER_BASE_URL: 'http://localhost:4004',
     PUBLISHING_JOURNAL_DIRECTORY: directory,
   });
+const generatedFixture = {
+  name: publishingDraft.name,
+  summary: publishingDraft.summary,
+  pages: publishingDraft.pages.map((page) => ({
+    name: page.name,
+    blocks: page.blocks.map((b) => ({
+      componentInstanceName: b.componentInstanceName,
+      savedAction: b.savedAction,
+      dataClean: b.dataClean,
+    })),
+  })),
+  labs: publishingDraft.labs.map((lab) => ({
+    ...lab,
+    version: {
+      ...lab.version,
+      sampleTests: lab.version.sampleTests.map((test) => ({
+        name: test.name,
+        kind: 'io',
+        inputJson: JSON.stringify(test.input),
+        expectedJson: JSON.stringify(test.expected),
+        comparator: 'deepEqual',
+      })),
+      hiddenTests: lab.version.hiddenTests.map((test) => ({
+        name: test.name,
+        kind: 'io',
+        inputJson: JSON.stringify(test.input),
+        expectedJson: JSON.stringify(test.expected),
+        comparator: 'deepEqual',
+      })),
+    },
+  })),
+  assessment: {
+    name: publishingDraft.assessment.name,
+    testQuestions: publishingDraft.assessment.testQuestions.map((q) => ({
+      question: q.question,
+      choices: q.choices.map((c) => c.value),
+      answerIndex: q.choices.findIndex((c) => c.value === q.answer),
+      correctResponse: q.correctResponse,
+      incorrectResponse: q.incorrectResponse,
+    })),
+  },
+};
 describe('draft generation', () => {
   it('accepts the user editor specimen including nested image/quiz JSON', () => {
     const value: unknown = JSON.parse(
@@ -56,7 +100,7 @@ describe('draft generation', () => {
               content: [
                 {
                   type: 'output_text',
-                  text: JSON.stringify(publishingDraft),
+                  text: JSON.stringify(generatedFixture),
                 },
               ],
             },
@@ -79,7 +123,20 @@ describe('draft generation', () => {
         { brief: 'Teach functions', sectionId: 'angular', level: 1 },
         identity
       )
-    ).toEqual(publishingDraft);
+    ).toMatchObject({
+      ...publishingDraft,
+      pages: [
+        {
+          name: publishingDraft.pages[0].name,
+          blocks: [
+            {
+              ...publishingDraft.pages[0].blocks[0],
+              blockId: expect.any(String) as unknown,
+            },
+          ],
+        },
+      ],
+    });
     expect(image).toHaveBeenCalledWith(
       { operation: 'find', query: '' },
       identity
@@ -92,6 +149,38 @@ describe('draft generation', () => {
     expect((call[1] as { input: string }).input).toContain(
       'https://assets.example/diagram.png'
     );
+  });
+  it('strict generation format exposes enum actions and server assigns identity/order/section', () => {
+    const schema = z.toJSONSchema(generationSchema);
+    expect(JSON.stringify(schema)).toContain('h1');
+    const draft = formatGeneratedDraft(generatedFixture, {
+      sectionId: 'rust',
+      level: 2,
+    });
+    expect(draft.sectionId).toBe('rust');
+    expect(draft.assessment.subject).toBe('rust');
+    expect(draft.assessment.level).toBe(2);
+    expect(draft.pages[0].blocks[0].sortIndex).toBe(0);
+    expect(draft.pages[0].blocks[0].blockId).toMatch(/^[a-f\d-]{36}$/);
+    expect(draft.labs[0].version.sampleTests[0].input).toEqual([2]);
+    expect(draft.assessment.testQuestions[0].answer).toBe('4');
+  });
+  it('rejects invalid generated action, JSON tests and answer indexes before publication', () => {
+    const invalid = structuredClone(generatedFixture);
+    invalid.pages[0].blocks[0].savedAction = 'unsupported';
+    expect(() =>
+      formatGeneratedDraft(invalid, { sectionId: 'angular', level: 1 })
+    ).toThrow();
+    const badTest = structuredClone(generatedFixture);
+    badTest.labs[0].version.sampleTests[0].inputJson = 'not JSON';
+    expect(() =>
+      formatGeneratedDraft(badTest, { sectionId: 'angular', level: 1 })
+    ).toThrow();
+    const badAnswer = structuredClone(generatedFixture);
+    badAnswer.assessment.testQuestions[0].answerIndex = 9;
+    expect(() =>
+      formatGeneratedDraft(badAnswer, { sectionId: 'angular', level: 1 })
+    ).toThrow();
   });
   it('rejects refused model responses', async () => {
     const settings = config('/tmp/unused');

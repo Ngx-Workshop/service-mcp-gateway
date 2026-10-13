@@ -1,3 +1,15 @@
+## Live draft generation passed — 2026-10-13
+
+Owner funded API access. Fixed non-strict generation formatting with an internal strict schema and deterministic identity/order/section/level conversion;63 unit/adapter and43 e2e tests, build and lint passed. Locally validated image deployed with rollback preserved. Actual admin MFE generated a valid unpublished draft with one page, one lab (two sample/two hidden tests plus solution), and three questions. Public contract unchanged; code fix remains uncommitted locally. No publication/runner test performed. Detailed source/image hashes and screenshot in deployment evidence.
+
+## Model activation update — 2026-10-13
+
+OPENAI_API_KEY configured privately and PUBLISHING_MODEL=gpt-5.4-mini activated. Model access and gateway readiness passed. Live generation is blocked by OpenAI HTTP429 credit_balance_exhausted / insufficient_quota. No successful draft or publication occurred. Owner funding or a funded project key is required to retry the prepared brief. Temporary key copy deleted. See deployment evidence for details.
+
+## Deployment update — 2026-10-13
+
+Gateway and both proxy configurations deployed after explicit user authorization. Publishing enabled; authenticated production section lookup passed in the owner administrator browser. Missing/invalid authentication remains401, disallowed origins/learner facade403, preflight204 and catalog/auth metadata200. OPENAI_API_KEY/PUBLISHING_MODEL remain absent; no live model generation or content publication was performed. See [deployment evidence](../../docs/publishing-deployment-2026-10-13.md). Preserved previous containers/configs and durable journal volume for rollback.
+
 # Workshop publishing handoff
 
 Status: Implemented; live integration and deployment pending. Date: 2026-10-12.

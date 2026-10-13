@@ -1,6 +1,6 @@
 # Workshop AI publishing
 
-Implemented 2026-10-12. Deployment and live model/owner acceptance are pending.
+Implemented 2026-10-12; deployed 2026-10-13. [Live route verification](publishing-deployment-2026-10-13.md) passed. Model credentials are configured and live draft generation passed after funding and a strict generation-format fix. Full publication acceptance remains pending.
 
 ## Interfaces
 
@@ -18,7 +18,7 @@ Keep PUBLISHING_ENABLED=false until ready. Enable it with actual ASSESSMENT_BASE
 
 Docker creates an owner-writable /var/lib/ngx-publishing directory and mounts publisher-runs there. Preserve this volume across releases; it contains private authoring results including solutions. Run a single gateway instance with this directory; this implementation does not provide a distributed queue or shared filesystem locking. A browser timeout does not cancel the server run; inspect its receipt before another attempt.
 
-Apply nginx-ngx-workshop.io native HTTPS and backhaul configuration together: admin-only `/api/publisher/tools`, agent `/mcp/publishing`, 8 MiB body limit and 180-second upstream timeout. Catalog body/time limits remain unchanged. Publish the additive contracts package 1.1.0 separately if needed; the MFE currently installs a committed reproducible vendor tarball, so it builds without sibling checkouts or an unpublished registry package. No rollout or registry publication has been performed.
+Apply nginx-ngx-workshop.io native HTTPS and backhaul configuration together: admin-only `/api/publisher/tools`, agent `/mcp/publishing`, 8 MiB body limit and 180-second upstream timeout. Catalog body/time limits remain unchanged. Publish the additive contracts package 1.1.0 separately if needed; the MFE currently installs a committed reproducible vendor tarball, so it builds without sibling checkouts or an unpublished registry package. The gateway and both Nginx configurations are deployed; registry publication remains separate. Production currently uses the preserved ngx-publisher-runs volume.
 
 ## Draft and editor format
 
@@ -26,7 +26,7 @@ WorkshopDraft includes sectionId, name, summary, level, pages, labs and assessme
 
 Draft generation reads ready image assets through service-uploader and supplies their names/URLs to the model. Model image URLs must belong to that verified set. The workshop_image tool can find assets or upload actual base64 image bytes as multipart file data to service-uploader; it never creates fake storage URL metadata or fetches arbitrary remote URLs. Uploads cap at approximately 4.5 MiB bytes through the 6 MiB encoded argument limit. Returned storageUrl is the editor image URL; actual public object access depends on uploader permissions.
 
-The generator uses the OpenAI Responses structured-output API with server-selected model and store=false, then strictly validates its result, section, level, answers and image provenance. Refusal, incomplete/invalid output and owner errors fail without publishing. No automatic model retries or paid live calls are used by tests. Reference: https://developers.openai.com/api/docs/guides/structured-outputs.
+The generator uses the OpenAI Responses structured-output API with server-selected model, store=false and an internal strict output schema, then converts and strictly validates its result, section, level, answers and image provenance. Refusal, incomplete/invalid output and owner errors fail without publishing. No automatic model retries or paid live calls are used by tests. Reference: https://developers.openai.com/api/docs/guides/structured-outputs.
 
 Published owner types are pinned and compile-checked at mappings. Known producer type discrepancies: CreateWorkshopDto declares _id required although runtime permits omission; LabTestCaseDto's generated input/expected unions omit JSON arrays and narrow opaque values. The adapter intentionally omits that _id requirement and validates service-owned sample/hidden JSON test values at the MCP boundary instead of using unsafe any.
 
