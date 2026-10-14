@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { HttpService } from '@nestjs/axios';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import type { AxiosResponse } from 'axios';
 import { loadCatalogConfig } from '../mcp/catalog.config';
 import { blocksSchema, workshopDraftSchema } from './publishing.schemas';
@@ -74,6 +74,254 @@ const generatedFixture = {
   },
 };
 describe('draft generation', () => {
+  it('uses an allowed selected model and rejects unknown models before provider calls', async () => {
+    const settings = config('/tmp/unused');
+    settings.publishing!.apiKey = 'private-key';
+    const post = jest.fn().mockReturnValue(
+      of({
+        data: {
+          status: 'completed',
+          output: [
+            {
+              type: 'message',
+              content: [
+                {
+                  type: 'output_text',
+                  text: JSON.stringify(generatedFixture),
+                },
+              ],
+            },
+          ],
+        },
+      })
+    );
+    const agent = new DraftAgentService(
+      { post } as unknown as HttpService,
+      {
+        image: jest.fn().mockResolvedValue([]),
+      } as unknown as PublishingOwnerClient,
+      settings
+    );
+    const model = settings.publishing!.models[1].id;
+    await agent.generate(
+      { brief: 'Functions', sectionId: 'angular', level: 1, model },
+      identity
+    );
+    expect(
+      ((post.mock.calls[0] as unknown[])[1] as { model: string }).model
+    ).toBe(model);
+    expect(agent.models().models[1].inputUsdPerMillion).toBeGreaterThan(0);
+    await expect(
+      agent.generate(
+        {
+          brief: 'Functions',
+          sectionId: 'angular',
+          level: 1,
+          model: 'not-approved',
+        },
+        identity
+      )
+    ).rejects.toThrow('not approved');
+    expect(post).toHaveBeenCalledTimes(1);
+  });
+  it('generates an image server-side and uploads provider bytes through the owner', async () => {
+    const settings = config('/tmp/unused');
+    settings.publishing!.apiKey = 'private-key';
+    const post = jest
+      .fn()
+      .mockReturnValue(of({ data: { data: [{ b64_json: 'aW1hZ2U=' }] } }));
+    const image = jest.fn().mockResolvedValue({
+      name: 'cover.png',
+      storageUrl: 'https://assets.example/cover.png',
+    });
+    const agent = new DraftAgentService(
+      { post } as unknown as HttpService,
+      { image } as unknown as PublishingOwnerClient,
+      settings
+    );
+    await expect(
+      agent.image(
+        { prompt: 'Workshop illustration', name: 'cover.png' },
+        identity
+      )
+    ).resolves.toHaveProperty('storageUrl');
+    expect((post.mock.calls[0] as unknown[])[0]).toBe(
+      'https://api.openai.com/v1/images/generations'
+    );
+    expect(
+      ((post.mock.calls[0] as unknown[])[1] as { model: string }).model
+    ).toBe(settings.publishing!.imageModel);
+    expect(image).toHaveBeenCalledWith(
+      {
+        operation: 'upload',
+        name: 'cover.png',
+        mediaType: 'image/png',
+        base64: 'aW1hZ2U=',
+      },
+      identity
+    );
+    post.mockReturnValue(throwError(() => new Error('private error')));
+    await expect(
+      agent.image(
+        { prompt: 'Workshop illustration', name: 'cover.png' },
+        identity
+      )
+    ).rejects.toHaveProperty('code');
+    expect(image).toHaveBeenCalledTimes(1);
+  });
+  const nestedFixture = {
+    ...generatedFixture,
+    pages: [
+      {
+        name: 'Component examples',
+        blocks: [
+          {
+            componentInstanceName: 'NgxEditorJs2ImageComponent',
+            savedAction: 'center',
+            dataClean: {
+              url: 'https://assets.example/components.png',
+              title: 'Components',
+            },
+          },
+          {
+            componentInstanceName: 'NgxEditorJs2PopQuizComponent',
+            savedAction: 'display-medium',
+            dataClean: generatedFixture.assessment.testQuestions[0],
+          },
+        ],
+      },
+    ],
+  };
+  it('converts structured model images and quizzes into validated editor JSON strings', () => {
+    const draft = formatGeneratedDraft(nestedFixture, {
+      sectionId: 'angular',
+      level: 2,
+    });
+    expect(JSON.parse(draft.pages[0].blocks[0].dataClean)).toEqual(
+      nestedFixture.pages[0].blocks[0].dataClean
+    );
+    expect(JSON.parse(draft.pages[0].blocks[1].dataClean)).toEqual(
+      publishingDraft.assessment.testQuestions[0]
+    );
+    expect(blocksSchema.safeParse(draft.pages[0].blocks).success).toBe(true);
+    expect(draft.pages[0].blocks.map((b) => b.sortIndex)).toEqual([0, 1]);
+    const missingTitle = structuredClone(nestedFixture);
+    Reflect.deleteProperty(missingTitle.pages[0].blocks[0].dataClean, 'title');
+    expect(generationSchema.safeParse(missingTitle).success).toBe(false);
+    const badAnswer = {
+      ...nestedFixture,
+      pages: [
+        {
+          name: 'Quiz',
+          blocks: [
+            {
+              componentInstanceName: 'NgxEditorJs2PopQuizComponent',
+              savedAction: 'display-medium',
+              dataClean: {
+                ...generatedFixture.assessment.testQuestions[0],
+                answerIndex: 9,
+              },
+            },
+          ],
+        },
+      ],
+    };
+    expect(() =>
+      formatGeneratedDraft(badAnswer, { sectionId: 'angular', level: 2 })
+    ).toThrow();
+  });
+  it('continues to reject unverified generated image URLs', async () => {
+    const settings = config('/tmp/unused');
+    settings.publishing!.model = 'configured-model';
+    settings.publishing!.apiKey = 'private-model-key';
+    const post = jest.fn().mockReturnValue(
+      of({
+        data: {
+          status: 'completed',
+          output: [
+            {
+              type: 'message',
+              content: [
+                { type: 'output_text', text: JSON.stringify(nestedFixture) },
+              ],
+            },
+          ],
+        },
+      })
+    );
+    const agent = new DraftAgentService(
+      { post } as unknown as HttpService,
+      {
+        image: jest.fn().mockResolvedValue([]),
+      } as unknown as PublishingOwnerClient,
+      settings
+    );
+    await expect(
+      agent.generate(
+        { brief: 'Components', sectionId: 'angular', level: 2 },
+        identity
+      )
+    ).rejects.toMatchObject({ code: 'GENERATED_DRAFT_INVALID' });
+  });
+  it.each([
+    ['configuration', undefined, 'MODEL_NOT_CONFIGURED'],
+    ['images', undefined, 'GENERATION_IMAGE_LOOKUP_FAILED'],
+    ['timeout', { isAxiosError: true, code: 'ECONNABORTED' }, 'MODEL_TIMEOUT'],
+    [
+      'incomplete',
+      { status: 'incomplete', output: [] },
+      'MODEL_OUTPUT_INCOMPLETE',
+    ],
+    [
+      'refusal',
+      {
+        status: 'completed',
+        output: [{ type: 'message', content: [{ type: 'refusal' }] }],
+      },
+      'MODEL_REFUSED',
+    ],
+    ['invalid', { status: 'completed', output: [] }, 'GENERATED_DRAFT_INVALID'],
+  ])(
+    'returns a safe tool error for %s generation failure',
+    async (stage, failure, code) => {
+      const settings = config('/tmp/unused');
+      settings.publishing!.model = 'configured-model';
+      settings.publishing!.apiKey =
+        stage === 'configuration' ? '' : 'private-model-key';
+      const image = jest.fn().mockImplementation(() => {
+        if (stage === 'images')
+          return Promise.reject(new Error('private uploader details'));
+        return Promise.resolve([]);
+      });
+      const post = jest
+        .fn()
+        .mockReturnValue(
+          stage === 'timeout'
+            ? throwError(() => failure)
+            : of({ data: failure })
+        );
+      const agent = new DraftAgentService(
+        { post } as unknown as HttpService,
+        { image } as unknown as PublishingOwnerClient,
+        settings
+      );
+      const tools = new PublishingToolsService(
+        {} as PublishingOwnerClient,
+        agent,
+        {} as PublishingRunService
+      );
+      const result = await tools.invoke(
+        'generate_workshop_draft',
+        { brief: 'Teach functions', sectionId: 'angular', level: 1 },
+        identity
+      );
+      expect(result.isError).toBe(true);
+      expect(JSON.stringify(result)).toContain(String(code));
+      expect(JSON.stringify(result)).not.toContain('private');
+      if (stage === 'configuration' || stage === 'images')
+        expect(post).not.toHaveBeenCalled();
+    }
+  );
   it('accepts the user editor specimen including nested image/quiz JSON', () => {
     const value: unknown = JSON.parse(
       readFileSync(
@@ -345,6 +593,28 @@ describe('publishing receipts', () => {
         )
       ),
     assessment: jest.fn().mockResolvedValue({ _id: id(5) }),
+  });
+  it('lists only durable receipts owned by the administrator after a service restart', async () => {
+    const service = new PublishingRunService(
+      owner() as unknown as PublishingOwnerClient,
+      config(directory)
+    );
+    const own = await service.publish(
+      { requestId: randomUUID(), draft: publishingDraft },
+      identity
+    );
+    await service.publish(
+      { requestId: randomUUID(), draft: publishingDraft },
+      { ...identity, subject: 'another' }
+    );
+    const restarted = new PublishingRunService(
+      owner() as unknown as PublishingOwnerClient,
+      config(directory)
+    );
+    expect(await restarted.list(identity)).toEqual([own]);
+    expect(await restarted.list({ ...identity, subject: 'absent' })).toEqual(
+      []
+    );
   });
   it('publishes in order, reuses initial page and returns the same receipt on duplicate', async () => {
     const adapter = owner();

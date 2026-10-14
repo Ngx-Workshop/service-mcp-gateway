@@ -1,15 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { McpServer, CallToolResult } from '@modelcontextprotocol/server';
 import { z } from 'zod';
+import { GenerationError } from './generation-error';
 import { DraftAgentService } from './draft-agent.service';
 import { PublisherIdentity, PublishingOwnerClient } from './owner.client';
 import { PublishingRunService } from './publishing-run.service';
 import {
   publishingDefinitions,
+  imageInputSchema,
   workshopDraftSchema,
 } from './publishing.schemas';
 @Injectable()
 export class PublishingToolsService {
+  private readonly logger = new Logger(PublishingToolsService.name);
   constructor(
     private readonly owner: PublishingOwnerClient,
     private readonly agent: DraftAgentService,
@@ -28,6 +31,12 @@ export class PublishingToolsService {
       const value = definition.inputSchema.parse(input);
       let data: unknown;
       switch (name) {
+        case 'list_publishing_models':
+          data = this.agent.models();
+          break;
+        case 'list_publishing_runs':
+          data = await this.runs.list(identity);
+          break;
         case 'generate_workshop_draft':
           data = await this.agent.generate(value, identity);
           break;
@@ -52,9 +61,14 @@ export class PublishingToolsService {
         case 'manage_coding_lab':
           data = await this.owner.lab(value, identity);
           break;
-        case 'workshop_image':
-          data = await this.owner.image(value, identity);
+        case 'workshop_image': {
+          const image = imageInputSchema.parse(value);
+          data =
+            image.operation === 'generate'
+              ? await this.agent.image(image, identity)
+              : await this.owner.image(image, identity);
           break;
+        }
       }
       const structuredContent = { data };
       return {
@@ -62,20 +76,32 @@ export class PublishingToolsService {
         content: [{ type: 'text', text: JSON.stringify(structuredContent) }],
       };
     } catch (error) {
+      if (error instanceof GenerationError)
+        this.logger.warn(
+          `Draft generation failed: ${error.code}${error.fields.length ? `; fields: ${error.fields.join(', ')}` : ''}`
+        );
       const message =
-        error instanceof z.ZodError
-          ? `Invalid publishing input: ${error.issues
-              .map((i) => i.path.join('.') || 'draft')
-              .slice(0, 8)
-              .join(', ')}`
-          : 'Publishing request failed. Check owner access, server configuration, or the publishing receipt.';
+        error instanceof GenerationError
+          ? error.message
+          : error instanceof z.ZodError
+            ? `Invalid publishing input: ${error.issues
+                .map((i) => i.path.join('.') || 'draft')
+                .slice(0, 8)
+                .join(', ')}`
+            : 'Publishing request failed. Check owner access, server configuration, or the publishing receipt.';
       return {
         isError: true,
         content: [
           {
             type: 'text',
             text: JSON.stringify({
-              error: { code: 'PUBLISHING_FAILED', message },
+              error: {
+                code:
+                  error instanceof GenerationError
+                    ? error.code
+                    : 'PUBLISHING_FAILED',
+                message,
+              },
             }),
           },
         ],

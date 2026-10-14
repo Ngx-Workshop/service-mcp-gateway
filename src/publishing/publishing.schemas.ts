@@ -226,6 +226,7 @@ const write = {
 export const publishingResultSchema = z.strictObject({ data: z.unknown() });
 export const generateDraftInputSchema = z.strictObject({
   brief: text,
+  model: z.string().trim().min(1).max(120).optional(),
   sectionId: sectionIdSchema,
   level: z.number().int().min(1).max(20),
 });
@@ -315,6 +316,10 @@ export const documentCrudSchema = z.discriminatedUnion('operation', [
 ]);
 export const imageInputSchema = z.discriminatedUnion('operation', [
   operation('find', { query: z.string().max(120) }),
+  operation('generate', {
+    prompt: z.string().trim().min(1).max(4000),
+    name: z.string().trim().min(1).max(120),
+  }),
   operation('upload', {
     name: z.string().min(1).max(120),
     mediaType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'image/gif']),
@@ -337,7 +342,27 @@ const definition = (
   outputSchema: publishingResultSchema,
   annotations,
 });
+export const publishingModelSchema = z.strictObject({
+  id: z.string().trim().min(1).max(120),
+  inputUsdPerMillion: z.number().nonnegative().nullable(),
+  outputUsdPerMillion: z.number().nonnegative().nullable(),
+});
+export const publishingModelCatalogSchema = z.strictObject({
+  models: z.array(publishingModelSchema).max(50),
+  defaultModel: z.string().nullable(),
+  imageModel: z.string(),
+});
 export const publishingDefinitions = {
+  list_publishing_models: definition(
+    'List server-approved draft models and reference USD token pricing.',
+    z.strictObject({}),
+    read
+  ),
+  list_publishing_runs: definition(
+    'List durable publishing receipts for the authenticated administrator, newest first.',
+    z.strictObject({}),
+    read
+  ),
   generate_workshop_draft: definition(
     'Generate documentation, labs and assessment from a brief; no owner writes. Review before publish.',
     generateDraftInputSchema,
@@ -370,7 +395,7 @@ export const publishingDefinitions = {
     labCrudSchema
   ),
   workshop_image: definition(
-    'Find ready images in service-uploader or upload base64 bytes; use returned storageUrl in image dataClean JSON.',
+    'Find ready image assets, generate and upload a workshop image using server model credentials, or upload base64 bytes. Use returned storageUrl in image dataClean JSON.',
     imageInputSchema
   ),
 };
@@ -389,6 +414,8 @@ export const publishingReceiptSchema = z.strictObject({
   message: z.string().optional(),
 });
 export const publishingContractSchemas = {
+  PublishingModelCatalog: publishingModelCatalogSchema,
+  PublishingModel: publishingModelSchema,
   WorkshopDraft: workshopDraftSchema,
   PublishingReceipt: publishingReceiptSchema,
   ManageDocumentInput: documentCrudSchema,

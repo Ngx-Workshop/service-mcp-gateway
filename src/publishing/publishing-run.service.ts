@@ -1,6 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
+import {
+  mkdir,
+  readFile,
+  writeFile,
+  rename,
+  readdir,
+  stat,
+} from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { CATALOG_CONFIG, CatalogConfig } from '../mcp/catalog.config';
@@ -35,6 +42,32 @@ export class PublishingRunService {
     if (run.subject !== identity.subject)
       throw new Error('Receipt is owned by another administrator');
     return run;
+  }
+  async list(identity: PublisherIdentity) {
+    if (!this.config.publishing) throw new Error('Publishing disabled');
+    const directory = this.config.publishing.journalDirectory;
+    const files = await readdir(directory).catch(
+      (error: NodeJS.ErrnoException) => {
+        if (error.code === 'ENOENT') return [];
+        throw error;
+      }
+    );
+    const receipts = [];
+    for (const file of files) {
+      if (!/^[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12}\.json$/i.test(file))
+        continue;
+      try {
+        const receipt = await this.get(file.slice(0, -5), identity);
+        const info = await stat(join(directory, file));
+        receipts.push({ receipt, modified: info.mtimeMs });
+      } catch {
+        /* Ignore foreign or unreadable receipts without disclosing them. */
+      }
+    }
+    return receipts
+      .sort((a, b) => b.modified - a.modified)
+      .slice(0, 100)
+      .map((row) => row.receipt);
   }
   private async save(run: PublishingRun) {
     const file = this.file(run.requestId);

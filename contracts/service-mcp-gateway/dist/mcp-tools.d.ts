@@ -351,6 +351,54 @@ export declare const mcpCatalogContract: {
         readonly endpoint: "/mcp/publishing";
         readonly authentication: "platform administrator bearer";
         readonly tools: readonly [{
+            readonly name: "list_publishing_models";
+            readonly description: "List server-approved draft models and reference USD token pricing.";
+            readonly annotations: {
+                readonly readOnlyHint: true;
+                readonly destructiveHint: false;
+                readonly idempotentHint: true;
+                readonly openWorldHint: true;
+            };
+            readonly inputSchema: {
+                readonly $schema: "https://json-schema.org/draft/2020-12/schema";
+                readonly type: "object";
+                readonly properties: {};
+                readonly additionalProperties: false;
+            };
+            readonly outputSchema: {
+                readonly $schema: "https://json-schema.org/draft/2020-12/schema";
+                readonly type: "object";
+                readonly properties: {
+                    readonly data: {};
+                };
+                readonly required: readonly ["data"];
+                readonly additionalProperties: false;
+            };
+        }, {
+            readonly name: "list_publishing_runs";
+            readonly description: "List durable publishing receipts for the authenticated administrator, newest first.";
+            readonly annotations: {
+                readonly readOnlyHint: true;
+                readonly destructiveHint: false;
+                readonly idempotentHint: true;
+                readonly openWorldHint: true;
+            };
+            readonly inputSchema: {
+                readonly $schema: "https://json-schema.org/draft/2020-12/schema";
+                readonly type: "object";
+                readonly properties: {};
+                readonly additionalProperties: false;
+            };
+            readonly outputSchema: {
+                readonly $schema: "https://json-schema.org/draft/2020-12/schema";
+                readonly type: "object";
+                readonly properties: {
+                    readonly data: {};
+                };
+                readonly required: readonly ["data"];
+                readonly additionalProperties: false;
+            };
+        }, {
             readonly name: "generate_workshop_draft";
             readonly description: "Generate documentation, labs and assessment from a brief; no owner writes. Review before publish.";
             readonly annotations: {
@@ -367,6 +415,11 @@ export declare const mcpCatalogContract: {
                         readonly type: "string";
                         readonly minLength: 1;
                         readonly maxLength: 20000;
+                    };
+                    readonly model: {
+                        readonly type: "string";
+                        readonly minLength: 1;
+                        readonly maxLength: 120;
                     };
                     readonly sectionId: {
                         readonly type: "string";
@@ -2316,7 +2369,7 @@ export declare const mcpCatalogContract: {
             };
         }, {
             readonly name: "workshop_image";
-            readonly description: "Find ready images in service-uploader or upload base64 bytes; use returned storageUrl in image dataClean JSON.";
+            readonly description: "Find ready image assets, generate and upload a workshop image using server model credentials, or upload base64 bytes. Use returned storageUrl in image dataClean JSON.";
             readonly annotations: {
                 readonly readOnlyHint: false;
                 readonly destructiveHint: true;
@@ -2338,6 +2391,26 @@ export declare const mcpCatalogContract: {
                         };
                     };
                     readonly required: readonly ["operation", "query"];
+                    readonly additionalProperties: false;
+                }, {
+                    readonly type: "object";
+                    readonly properties: {
+                        readonly operation: {
+                            readonly type: "string";
+                            readonly const: "generate";
+                        };
+                        readonly prompt: {
+                            readonly type: "string";
+                            readonly minLength: 1;
+                            readonly maxLength: 4000;
+                        };
+                        readonly name: {
+                            readonly type: "string";
+                            readonly minLength: 1;
+                            readonly maxLength: 120;
+                        };
+                    };
+                    readonly required: readonly ["operation", "prompt", "name"];
                     readonly additionalProperties: false;
                 }, {
                     readonly type: "object";
