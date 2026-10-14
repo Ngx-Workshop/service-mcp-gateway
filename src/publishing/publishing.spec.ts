@@ -74,6 +74,101 @@ const generatedFixture = {
   },
 };
 describe('draft generation', () => {
+  it('uses an allowed selected model and rejects unknown models before provider calls', async () => {
+    const settings = config('/tmp/unused');
+    settings.publishing!.apiKey = 'private-key';
+    const post = jest.fn().mockReturnValue(
+      of({
+        data: {
+          status: 'completed',
+          output: [
+            {
+              type: 'message',
+              content: [
+                {
+                  type: 'output_text',
+                  text: JSON.stringify(generatedFixture),
+                },
+              ],
+            },
+          ],
+        },
+      })
+    );
+    const agent = new DraftAgentService(
+      { post } as unknown as HttpService,
+      {
+        image: jest.fn().mockResolvedValue([]),
+      } as unknown as PublishingOwnerClient,
+      settings
+    );
+    const model = settings.publishing!.models[1].id;
+    await agent.generate(
+      { brief: 'Functions', sectionId: 'angular', level: 1, model },
+      identity
+    );
+    expect(
+      ((post.mock.calls[0] as unknown[])[1] as { model: string }).model
+    ).toBe(model);
+    expect(agent.models().models[1].inputUsdPerMillion).toBeGreaterThan(0);
+    await expect(
+      agent.generate(
+        {
+          brief: 'Functions',
+          sectionId: 'angular',
+          level: 1,
+          model: 'not-approved',
+        },
+        identity
+      )
+    ).rejects.toThrow('not approved');
+    expect(post).toHaveBeenCalledTimes(1);
+  });
+  it('generates an image server-side and uploads provider bytes through the owner', async () => {
+    const settings = config('/tmp/unused');
+    settings.publishing!.apiKey = 'private-key';
+    const post = jest
+      .fn()
+      .mockReturnValue(of({ data: { data: [{ b64_json: 'aW1hZ2U=' }] } }));
+    const image = jest.fn().mockResolvedValue({
+      name: 'cover.png',
+      storageUrl: 'https://assets.example/cover.png',
+    });
+    const agent = new DraftAgentService(
+      { post } as unknown as HttpService,
+      { image } as unknown as PublishingOwnerClient,
+      settings
+    );
+    await expect(
+      agent.image(
+        { prompt: 'Workshop illustration', name: 'cover.png' },
+        identity
+      )
+    ).resolves.toHaveProperty('storageUrl');
+    expect((post.mock.calls[0] as unknown[])[0]).toBe(
+      'https://api.openai.com/v1/images/generations'
+    );
+    expect(
+      ((post.mock.calls[0] as unknown[])[1] as { model: string }).model
+    ).toBe(settings.publishing!.imageModel);
+    expect(image).toHaveBeenCalledWith(
+      {
+        operation: 'upload',
+        name: 'cover.png',
+        mediaType: 'image/png',
+        base64: 'aW1hZ2U=',
+      },
+      identity
+    );
+    post.mockReturnValue(throwError(() => new Error('private error')));
+    await expect(
+      agent.image(
+        { prompt: 'Workshop illustration', name: 'cover.png' },
+        identity
+      )
+    ).rejects.toHaveProperty('code');
+    expect(image).toHaveBeenCalledTimes(1);
+  });
   const nestedFixture = {
     ...generatedFixture,
     pages: [
@@ -498,6 +593,28 @@ describe('publishing receipts', () => {
         )
       ),
     assessment: jest.fn().mockResolvedValue({ _id: id(5) }),
+  });
+  it('lists only durable receipts owned by the administrator after a service restart', async () => {
+    const service = new PublishingRunService(
+      owner() as unknown as PublishingOwnerClient,
+      config(directory)
+    );
+    const own = await service.publish(
+      { requestId: randomUUID(), draft: publishingDraft },
+      identity
+    );
+    await service.publish(
+      { requestId: randomUUID(), draft: publishingDraft },
+      { ...identity, subject: 'another' }
+    );
+    const restarted = new PublishingRunService(
+      owner() as unknown as PublishingOwnerClient,
+      config(directory)
+    );
+    expect(await restarted.list(identity)).toEqual([own]);
+    expect(await restarted.list({ ...identity, subject: 'absent' })).toEqual(
+      []
+    );
   });
   it('publishes in order, reuses initial page and returns the same receipt on duplicate', async () => {
     const adapter = owner();

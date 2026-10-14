@@ -119,6 +119,20 @@ export interface components {
                 message: string;
             };
         };
+        PublishingModelCatalog: {
+            models: {
+                id: string;
+                inputUsdPerMillion: number | null;
+                outputUsdPerMillion: number | null;
+            }[];
+            defaultModel: string | null;
+            imageModel: string;
+        };
+        PublishingModel: {
+            id: string;
+            inputUsdPerMillion: number | null;
+            outputUsdPerMillion: number | null;
+        };
         WorkshopDraft: {
             sectionId: string;
             name: string;
@@ -520,6 +534,11 @@ export interface components {
             query: string;
         } | {
             /** @enum {string} */
+            operation: "generate";
+            prompt: string;
+            name: string;
+        } | {
+            /** @enum {string} */
             operation: "upload";
             name: string;
             /** @enum {string} */
@@ -539,6 +558,7 @@ export interface components {
         };
         GenerateWorkshopDraftInput: {
             brief: string;
+            model?: string;
             sectionId: string;
             level: number;
         };

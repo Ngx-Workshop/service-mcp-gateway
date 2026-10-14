@@ -7,6 +7,7 @@ import { PublisherIdentity, PublishingOwnerClient } from './owner.client';
 import { PublishingRunService } from './publishing-run.service';
 import {
   publishingDefinitions,
+  imageInputSchema,
   workshopDraftSchema,
 } from './publishing.schemas';
 @Injectable()
@@ -30,6 +31,12 @@ export class PublishingToolsService {
       const value = definition.inputSchema.parse(input);
       let data: unknown;
       switch (name) {
+        case 'list_publishing_models':
+          data = this.agent.models();
+          break;
+        case 'list_publishing_runs':
+          data = await this.runs.list(identity);
+          break;
         case 'generate_workshop_draft':
           data = await this.agent.generate(value, identity);
           break;
@@ -54,9 +61,14 @@ export class PublishingToolsService {
         case 'manage_coding_lab':
           data = await this.owner.lab(value, identity);
           break;
-        case 'workshop_image':
-          data = await this.owner.image(value, identity);
+        case 'workshop_image': {
+          const image = imageInputSchema.parse(value);
+          data =
+            image.operation === 'generate'
+              ? await this.agent.image(image, identity)
+              : await this.owner.image(image, identity);
           break;
+        }
       }
       const structuredContent = { data };
       return {

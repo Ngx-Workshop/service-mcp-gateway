@@ -44,3 +44,16 @@ Gateway unit tests cover editor specimen, invalid/sanitized blocks, assessment c
 
 ## Generation failure diagnostics
 The generator returns safe error codes for missing settings, image lookup, model access/quota/rate limits/timeouts, provider rejection/unavailability, incomplete/refused output and invalid generated content. The dispatcher logs the category and bounded validation field paths only; upstream bodies, prompts and credentials are excluded. Updated publisher clients map these codes to fixed guidance and fall back safely for older responses. Success schemas remain unchanged. Diagnostics and nested-block format repair were deployed after owner approval; see the 2026-10-13 deployment evidence.
+
+## Model selection, history and generated images — 2026-10-13
+The administrator endpoint now exposes ten authoring tools; public catalog discovery remains exactly three read-only tools. Contracts 1.2.0 add `list_publishing_models`, `list_publishing_runs`, optional `model` on `generate_workshop_draft`, and `workshop_image` operation `generate` with `prompt` (1–4000 characters) and `name` (1–120). Older generation callers continue using PUBLISHING_MODEL. Credentials remain server-owned.
+
+PUBLISHING_MODELS_JSON can replace the allowed model list and reference USD prices, for example:
+```json
+[{"id":"gpt-6.1-sol","inputUsdPerMillion":2,"outputUsdPerMillion":10},{"id":"gpt-6-luna","inputUsdPerMillion":0.1,"outputUsdPerMillion":0.5}]
+```
+Defaults are the above standard short-context reference rates checked against [official pricing](https://developers.openai.com/api/docs/pricing) on 2026-10-13. Operators must keep rates and account availability current; these are not fixed workshop prices. A separately configured PUBLISHING_MODEL remains allowed and is added with unavailable prices if absent from the list. Explicit unknown models fail before any provider call. No model-availability probe is made.
+
+PUBLISHING_IMAGE_MODEL defaults to `gpt-image-2.5-sunburst`. Explicit generation uses [Images API](https://developers.openai.com/api/docs/guides/image-generation), one low-quality 1024×1024 PNG, a 120-second provider timeout and bounded response. Provider bytes are uploaded through the existing authenticated service-uploader adapter; no URL is fabricated, and no workshops are published by this command. It incurs a separate provider charge. Upload storage must succeed before a usable asset returns.
+
+History scans the existing receipt journal, validates each UUID receipt, filters by authenticated subject and returns the latest 100 by modification time. Missing directories yield empty history. Foreign, malformed or unreadable receipts are omitted without disclosure; directory errors fail the request. No DB or receipt migration. Deploy the gateway before the matching publisher bundle; the MFE vendors this additive contracts package, so registry publication is independent. Verify provider model access, real storage and shell authorization after rollout.

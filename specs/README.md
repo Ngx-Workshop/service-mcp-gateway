@@ -13,3 +13,5 @@ plan, tasks and handoff for work without prior conversation context.
 | 005 Workshop publishing | Deployed; live draft passed; publication acceptance pending | [Spec](005-workshop-publishing/spec.md) | [Plan](005-workshop-publishing/plan.md) | [Tasks](005-workshop-publishing/tasks.md) | [Handoff](005-workshop-publishing/handoff.md) |
 
 | 006 Automatic delivery | Implemented; first main run pending | [Spec](006-automatic-delivery/spec.md) | [Plan](006-automatic-delivery/plan.md) | [Tasks](006-automatic-delivery/tasks.md) | [Handoff](006-automatic-delivery/handoff.md) |
+
+| 007-publisher-options | Implemented; live integration pending | [Spec](007-publisher-options/spec.md) | [Plan](007-publisher-options/plan.md) | [Tasks](007-publisher-options/tasks.md) | [Handoff](007-publisher-options/handoff.md) |

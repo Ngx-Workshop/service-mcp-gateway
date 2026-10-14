@@ -498,6 +498,80 @@
         ],
         "additionalProperties": false
       },
+      "PublishingModelCatalog": {
+        "type": "object",
+        "properties": {
+          "models": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "inputUsdPerMillion": {
+                  "nullable": true,
+                  "type": "number",
+                  "minimum": 0
+                },
+                "outputUsdPerMillion": {
+                  "nullable": true,
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "id",
+                "inputUsdPerMillion",
+                "outputUsdPerMillion"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "defaultModel": {
+            "nullable": true,
+            "type": "string"
+          },
+          "imageModel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "models",
+          "defaultModel",
+          "imageModel"
+        ],
+        "additionalProperties": false
+      },
+      "PublishingModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "inputUsdPerMillion": {
+            "nullable": true,
+            "type": "number",
+            "minimum": 0
+          },
+          "outputUsdPerMillion": {
+            "nullable": true,
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "inputUsdPerMillion",
+          "outputUsdPerMillion"
+        ],
+        "additionalProperties": false
+      },
       "WorkshopDraft": {
         "type": "object",
         "properties": {
@@ -2482,6 +2556,33 @@
               "operation": {
                 "type": "string",
                 "enum": [
+                  "generate"
+                ]
+              },
+              "prompt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": [
+              "operation",
+              "prompt",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "operation": {
+                "type": "string",
+                "enum": [
                   "upload"
                 ]
               },
@@ -2577,6 +2678,11 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 20000
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
           },
           "sectionId": {
             "type": "string",

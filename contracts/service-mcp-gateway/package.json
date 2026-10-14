@@ -1,6 +1,6 @@
 {
   "name": "@tmdjr/service-mcp-gateway-contracts",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Independent tool input/output models and runtime JSON Schemas for the NGX Workshop MCP catalog",
   "license": "MIT",
   "private": false,

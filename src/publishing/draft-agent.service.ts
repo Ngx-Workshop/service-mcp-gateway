@@ -18,10 +18,71 @@ export class DraftAgentService {
     private readonly owner: PublishingOwnerClient,
     @Inject(CATALOG_CONFIG) private readonly config: CatalogConfig
   ) {}
+  models() {
+    const settings = this.config.publishing;
+    const models = [...(settings?.models ?? [])];
+    if (settings?.model && !models.some((m) => m.id === settings.model))
+      models.unshift({
+        id: settings.model,
+        inputUsdPerMillion: null,
+        outputUsdPerMillion: null,
+      });
+    return {
+      models,
+      defaultModel: settings?.model ?? models[0]?.id ?? null,
+      imageModel: settings?.imageModel ?? 'gpt-image-2.5-sunburst',
+    };
+  }
+  async image(
+    value: { prompt: string; name: string },
+    identity: PublisherIdentity
+  ) {
+    const settings = this.config.publishing;
+    if (!settings?.apiKey) throw new GenerationError('MODEL_NOT_CONFIGURED');
+    const response = await firstValueFrom(
+      this.http.post<unknown>(
+        'https://api.openai.com/v1/images/generations',
+        {
+          model: settings.imageModel,
+          prompt: value.prompt,
+          n: 1,
+          size: '1024x1024',
+          quality: 'low',
+          output_format: 'png',
+        },
+        {
+          headers: { Authorization: `Bearer ${settings.apiKey}` },
+          timeout: 120000,
+          maxRedirects: 0,
+          maxContentLength: 8 * 1024 * 1024,
+          proxy: false,
+        }
+      )
+    ).catch((error: unknown) => {
+      throw modelError(error);
+    });
+    const result = z
+      .object({
+        data: z.array(z.object({ b64_json: z.string().min(4) })).length(1),
+      })
+      .parse(response.data);
+    return this.owner.image(
+      {
+        operation: 'upload',
+        name: value.name,
+        mediaType: 'image/png',
+        base64: result.data[0].b64_json,
+      },
+      identity
+    );
+  }
   async generate(value: unknown, identity: PublisherIdentity) {
     const input = generateDraftInputSchema.parse(value);
     const settings = this.config.publishing;
-    if (!settings?.apiKey || !settings.model)
+    const model = input.model ?? settings?.model ?? this.models().defaultModel;
+    if (input.model && !this.models().models.some((m) => m.id === input.model))
+      throw new Error('Model is not approved for publishing');
+    if (!settings?.apiKey || !model)
       throw new GenerationError('MODEL_NOT_CONFIGURED');
     const images = await this.owner
       .image({ operation: 'find', query: '' }, identity)
@@ -38,7 +99,7 @@ export class DraftAgentService {
       this.http.post<unknown>(
         'https://api.openai.com/v1/responses',
         {
-          model: settings.model,
+          model,
           store: false,
           max_output_tokens: 12000,
           instructions:

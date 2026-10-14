@@ -437,6 +437,60 @@ export const mcpCatalogContract = {
         "authentication": "platform administrator bearer",
         "tools": [
             {
+                "name": "list_publishing_models",
+                "description": "List server-approved draft models and reference USD token pricing.",
+                "annotations": {
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": true
+                },
+                "inputSchema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {
+                        "data": {}
+                    },
+                    "required": [
+                        "data"
+                    ],
+                    "additionalProperties": false
+                }
+            },
+            {
+                "name": "list_publishing_runs",
+                "description": "List durable publishing receipts for the authenticated administrator, newest first.",
+                "annotations": {
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": true
+                },
+                "inputSchema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                },
+                "outputSchema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {
+                        "data": {}
+                    },
+                    "required": [
+                        "data"
+                    ],
+                    "additionalProperties": false
+                }
+            },
+            {
                 "name": "generate_workshop_draft",
                 "description": "Generate documentation, labs and assessment from a brief; no owner writes. Review before publish.",
                 "annotations": {
@@ -453,6 +507,11 @@ export const mcpCatalogContract = {
                             "type": "string",
                             "minLength": 1,
                             "maxLength": 20000
+                        },
+                        "model": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
                         },
                         "sectionId": {
                             "type": "string",
@@ -2957,7 +3016,7 @@ export const mcpCatalogContract = {
             },
             {
                 "name": "workshop_image",
-                "description": "Find ready images in service-uploader or upload base64 bytes; use returned storageUrl in image dataClean JSON.",
+                "description": "Find ready image assets, generate and upload a workshop image using server model credentials, or upload base64 bytes. Use returned storageUrl in image dataClean JSON.",
                 "annotations": {
                     "readOnlyHint": false,
                     "destructiveHint": true,
@@ -2982,6 +3041,31 @@ export const mcpCatalogContract = {
                             "required": [
                                 "operation",
                                 "query"
+                            ],
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "operation": {
+                                    "type": "string",
+                                    "const": "generate"
+                                },
+                                "prompt": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 4000
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                }
+                            },
+                            "required": [
+                                "operation",
+                                "prompt",
+                                "name"
                             ],
                             "additionalProperties": false
                         },

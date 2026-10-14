@@ -331,6 +331,8 @@ export class PublishingOwnerClient {
           a.name.toLowerCase().includes(v.query.toLowerCase())
       );
     }
+    if (v.operation === 'generate')
+      throw new Error('Image generation belongs to the model agent');
     const bytes = Buffer.from(v.base64, 'base64');
     const form = new FormData();
     form.append('name', v.name);

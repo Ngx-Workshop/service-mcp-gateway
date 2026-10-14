@@ -75,7 +75,7 @@ describe('Administrator publishing protocol', () => {
       .expect(401);
     expect(owner.assessment).not.toHaveBeenCalled();
   });
-  it('discovers eight authoring tools with official client and validates editor draft', async () => {
+  it('discovers ten authoring tools with official client and validates editor draft', async () => {
     const client = new Client(
       { name: 'publisher-test', version: '1' },
       { versionNegotiation: { mode: { pin: '2026-07-28' } } }
@@ -87,11 +87,17 @@ describe('Administrator publishing protocol', () => {
         })
       );
       const discovery = await client.listTools();
-      expect(discovery.tools).toHaveLength(8);
+      expect(discovery.tools).toHaveLength(10);
       expect(
         discovery.tools.find((t) => t.name === 'publish_workshop')?.annotations
           ?.readOnlyHint
       ).toBe(false);
+      expect(discovery.tools.map((t) => t.name)).toEqual(
+        expect.arrayContaining([
+          'list_publishing_models',
+          'list_publishing_runs',
+        ])
+      );
       const result = await client.callTool({
         name: 'validate_workshop_draft',
         arguments: { draft: publishingDraft },
