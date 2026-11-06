@@ -34,3 +34,24 @@ Final quality gates: npm run lint:check passes without errors; all 95 unit tests
 44 protocol tests pass. Skill validators pass for all four packages. Archive/generated
 content consistency was checked against the publisher's vendored contract. No live
 provider calls or release operations were performed.
+
+## Deployment follow-up — 2026-11-05
+
+Failure source: https://github.com/Ngx-Workshop/service-mcp-gateway/actions/runs/42142147627/job/127644809205
+The validation job stopped at the production dependency audit. Multer 2.4.0 was
+resolved by the refreshed dependency lock; its high-severity advisory also marks
+@nestjs/platform-express as high. package.json now overrides only that owner's
+Multer to patched 2.5.0 and package-lock.json records its verified registry tarball.
+The audit gate was not weakened. Clean install and production high-severity audit
+pass; the existing moderate Hono finding remains. Changes are local until committed
+and pushed; rerunning the unchanged failed commit would retain the vulnerable lock.
+
+Clean-install validation also exposed sanitize-html 2.18.1 → htmlparser2 12's ESM
+parser tree, which Jest 29 had skipped transforming. Both unit and protocol Jest
+configs now enable JavaScript transformation only for the six parser-tree packages;
+runtime dependencies and sanitizer behavior were not downgraded or mocked away.
+Final local validation passes on Node 22.23.3: clean install, production audit gate,
+strict build, 95 unit tests, 44 protocol tests, 5 publication-workflow tests, 5
+Python deployment tests, lint, contract generation/build and the exact generated-
+artifact no-diff gate. No workflow rerun, commit, push, publication or deployment
+was performed; the fixed commit must reach main before the release can use it.

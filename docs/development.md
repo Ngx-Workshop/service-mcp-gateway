@@ -121,3 +121,25 @@ foreign-subject denial. Build must copy all four SKILL.md assets into dist/publi
 skills; Docker copies dist. Run npm run build, tests, protocol e2e, lint:check and
 contract generation/build after changes. Frontend uses the generated 1.3.0 contract
 tarball; no registry publication or deployment is implied by local generation.
+
+## Deployment audit correction — 2026-11-05
+
+Run 42142147627 failed before build/image/publication/deployment at
+`npm audit --omit=dev --audit-level=high`. The refreshed lock resolved Multer 2.4.0
+under @nestjs/platform-express 11.2.8; GHSA-q7qp-rjg7-q26m is patched in 2.5.0.
+A scoped @nestjs/platform-express → multer 2.5.0 override keeps the Nest major and
+all delivery/security gates intact. Only that transitive lock entry changed.
+Clean `npm ci --ignore-scripts` and the exact production audit command pass; the
+remaining moderate @hono/node-server advisory is outside this high-severity gate.
+No major Hono/MCP or Nest upgrade was introduced. See the preparation handoff for
+validation evidence. This dependency correction does not itself push or deploy.
+
+Clean-install validation also exposed sanitize-html 2.18.1 → htmlparser2 12's ESM
+parser tree, which Jest 29 had skipped transforming. Both unit and protocol Jest
+configs now enable JavaScript transformation only for the six parser-tree packages;
+runtime dependencies and sanitizer behavior were not downgraded or mocked away.
+Final local validation passes on Node 22.23.3: clean install, production audit gate,
+strict build, 95 unit tests, 44 protocol tests, 5 publication-workflow tests, 5
+Python deployment tests, lint, contract generation/build and the exact generated-
+artifact no-diff gate. No workflow rerun, commit, push, publication or deployment
+was performed; the fixed commit must reach main before the release can use it.

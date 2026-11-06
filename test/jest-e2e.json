@@ -8,7 +8,17 @@
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "allowJs": true
+        }
+      }
+    ]
   },
-  "testTimeout": 15000
+  "testTimeout": 15000,
+  "transformIgnorePatterns": [
+    "node_modules/(?!(htmlparser2|domhandler|domutils|dom-serializer|domelementtype|entities)/)"
+  ]
 }
