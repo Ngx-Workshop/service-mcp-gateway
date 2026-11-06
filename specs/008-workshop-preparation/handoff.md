@@ -55,3 +55,25 @@ strict build, 95 unit tests, 44 protocol tests, 5 publication-workflow tests, 5
 Python deployment tests, lint, contract generation/build and the exact generated-
 artifact no-diff gate. No workflow rerun, commit, push, publication or deployment
 was performed; the fixed commit must reach main before the release can use it.
+
+## Live lab-preflight rollout and diagnostics
+
+Confirmed the deployed admin coding-labs proxy returned HTTP 404 Cannot POST
+/lab-preflight while the endpoint remained only in the coding-labs working tree.
+The user's exact draft passed the local isolated runner: reference 7/7, starter
+0/7 and constant baseline 1/7. No draft rewrite or validation bypass was needed.
+With explicit user approval, coding-labs commit 1a710e3c8f7736a0964ce56d27d0db6f2beff7e8
+was pushed and its contract publication/production deployment succeeded:
+https://github.com/Ngx-Workshop/service-coding-labs/actions/runs/42162389103
+The route now returns expected 401 without credentials rather than 404. Rechecking
+the existing draft in the authenticated administrator wizard against the real
+services passed all seven automated checks and enabled Continue to publish.
+No workshop publication, paid generation or content changes were performed.
+
+Gateway diagnostic follow-up (local only): lab-preflight-error.ts maps missing
+endpoint, denied access, invalid request/size, capacity, unavailable runner,
+timeout/connection and incompatible response into fixed actionable messages.
+No owner body, credential, URL or generated code is copied into those messages.
+Caught infrastructure/provider failures are tracked structurally so changing error
+wording cannot trigger a paid content repair. Verification: 106 unit tests, strict
+build and non-mutating lint pass; source/discovery contracts are unchanged.

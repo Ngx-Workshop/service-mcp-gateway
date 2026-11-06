@@ -1,8 +1,6 @@
-import { isAbsolute } from 'node:path';
 import { loadRuntimeProfile } from '../auth/runtime-profile';
 import { loadOAuthConfig } from '../auth/oauth.config';
 import { z } from 'zod';
-import { publishingModelSchema } from '../publishing/publishing.schemas';
 export const REQUEST_BYTES = 64 * 1024;
 export const RESPONSE_BYTES = 2 * 1024 * 1024;
 export const UPSTREAM_TIMEOUT_MS = 5000;
@@ -46,50 +44,11 @@ export function loadCatalogConfig(environment: NodeJS.ProcessEnv) {
   return {
     documentBaseUrl: parsed.data.DOCUMENT_BASE_URL.replace(/\/$/, ''),
     codingLabsBaseUrl: parsed.data.CODING_LABS_BASE_URL.replace(/\/$/, ''),
-    publishing:
+    publisherBaseUrl:
       environment.PUBLISHING_ENABLED === 'true'
-        ? {
-            assessmentBaseUrl: upstreamUrl
-              .parse(environment.ASSESSMENT_BASE_URL)
-              .replace(/\/$/, ''),
-            uploaderBaseUrl: upstreamUrl
-              .parse(environment.UPLOADER_BASE_URL)
-              .replace(/\/$/, ''),
-            journalDirectory: z
-              .string()
-              .min(1)
-              .refine(
-                isAbsolute,
-                'Use an absolute publishing journal directory'
-              )
-              .parse(environment.PUBLISHING_JOURNAL_DIRECTORY),
-            model: environment.PUBLISHING_MODEL,
-            models: environment.PUBLISHING_MODELS_JSON
-              ? z
-                  .array(publishingModelSchema)
-                  .min(1)
-                  .max(50)
-                  .refine(
-                    (models) =>
-                      new Set(models.map((m) => m.id)).size === models.length
-                  )
-                  .parse(JSON.parse(environment.PUBLISHING_MODELS_JSON))
-              : [
-                  {
-                    id: 'gpt-6.1-sol',
-                    inputUsdPerMillion: 2,
-                    outputUsdPerMillion: 10,
-                  },
-                  {
-                    id: 'gpt-6-luna',
-                    inputUsdPerMillion: 0.1,
-                    outputUsdPerMillion: 0.5,
-                  },
-                ],
-            imageModel:
-              environment.PUBLISHING_IMAGE_MODEL || 'gpt-image-2.5-sunburst',
-            apiKey: environment.OPENAI_API_KEY,
-          }
+        ? upstreamUrl
+            .parse(environment.AI_PUBLISHER_BASE_URL)
+            .replace(/\/$/, '')
         : undefined,
     port: parsed.data.PORT,
     auth: loadOAuthConfig(environment),
@@ -97,6 +56,6 @@ export function loadCatalogConfig(environment: NodeJS.ProcessEnv) {
   };
 }
 type LoadedConfig = ReturnType<typeof loadCatalogConfig>;
-export type CatalogConfig = Omit<LoadedConfig, 'publishing'> & {
-  publishing?: LoadedConfig['publishing'];
+export type CatalogConfig = Omit<LoadedConfig, 'publisherBaseUrl'> & {
+  publisherBaseUrl?: string;
 };

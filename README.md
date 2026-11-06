@@ -153,3 +153,10 @@ Private ChatGPT account linking and all three read-only tool calls passed.
 See [launch evidence and operations](docs/production-execution-2026-10-12.md) for
 exact versions, verified boundaries, recovery paths and remaining action. Earlier
 phase-specific deferred statements are historical.
+
+## AI publisher extraction
+
+Workshop generation and publishing now run in service-ai-publisher. The existing
+/publisher/tools and /mcp/publishing paths remain compatibility adapters. Configure
+PUBLISHING_ENABLED=true and AI_PUBLISHER_BASE_URL; model credentials and journals
+move to the publisher. See [migration handoff](specs/009-publisher-migration/handoff.md).

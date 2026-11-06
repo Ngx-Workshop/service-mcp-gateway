@@ -12,7 +12,6 @@ import time
 NAME = 'service-mcp-gateway'
 ENV = Path('/etc/ngx-workshop/oauth/gateway/runtime.env')
 SECRET = Path('/etc/ngx-workshop/oauth/gateway/introspection')
-VOLUME = 'ngx-publisher-runs'
 
 
 def docker(*args):
@@ -40,12 +39,11 @@ def deploy(directory, revision, release):
                   if line and not line.startswith('#') and '=' in line)
     required = {'PORT': '3011', 'RUNTIME_PROFILE': 'production',
                 'MCP_AUTH_MODE': 'oauth', 'PUBLISHING_ENABLED': 'true',
-                'PUBLISHING_JOURNAL_DIRECTORY': '/var/lib/ngx-publishing',
+                'AI_PUBLISHER_BASE_URL': 'http://service-ai-publisher:3014',
                 'AUTH_INTROSPECTION_SECRET_FILE': '/run/secrets/introspection'}
     if any(config.get(key) != value for key, value in required.items()):
         raise RuntimeError('Runtime configuration does not match production deployment')
     docker('network', 'inspect', 'ngx-net')
-    docker('volume', 'inspect', VOLUME)
     docker('container', 'inspect', 'ngx-oauth-backhaul')
     docker('load', '--input', str(archive))
     actual = docker('image', 'inspect', 'service-mcp-gateway:candidate', '--format', '{{.Id}}')
@@ -70,7 +68,6 @@ def deploy(directory, revision, release):
                '--user', '1000:1000', '--read-only',
                '--tmpfs', '/tmp:size=16m,noexec,nosuid', '--cap-drop', 'ALL',
                '--security-opt', 'no-new-privileges:true',
-               '--mount', f'type=volume,source={VOLUME},target=/var/lib/ngx-publishing',
                '--mount', f'type=bind,source={SECRET},target=/run/secrets/introspection,readonly', image)
         for attempt in range(30):
             try:

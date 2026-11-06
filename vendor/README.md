@@ -13,3 +13,11 @@ reviewed artifact with the registry dependency.
 Publication verified through npm trusted OIDC; every extracted published file
 matched this reviewed artifact. The gateway now pins registry 0.0.66, so the
 vendor artifact is retired.
+
+## AI publisher compatibility contract
+
+`tmdjr-service-ai-publisher-contracts-1.0.0.tgz` is a local package artifact from
+service-ai-publisher's independent generated contracts. It supplies discovery and
+OpenAPI schemas only; no publisher implementation runs in this gateway. Regenerate
+the producer and pack with `npm pack --ignore-scripts`, then refresh this dependency
+and regenerate gateway contracts. Local packaging does not publish to the registry.

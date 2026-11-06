@@ -24,7 +24,7 @@ class DeploymentTests(unittest.TestCase):
         (self.root / 'image.tar.sha256').write_text(hashlib.sha256(b'validated image').hexdigest() + '  image.tar\n')
         (self.root / 'image-id.txt').write_text(IMAGE)
         self.env = self.root / 'runtime.env'
-        self.env.write_text('PORT=3011\nRUNTIME_PROFILE=production\nMCP_AUTH_MODE=oauth\nPUBLISHING_ENABLED=true\nPUBLISHING_JOURNAL_DIRECTORY=/var/lib/ngx-publishing\nAUTH_INTROSPECTION_SECRET_FILE=/run/secrets/introspection\nOPENAI_API_KEY=private-test-value\n')
+        self.env.write_text('PORT=3011\nRUNTIME_PROFILE=production\nMCP_AUTH_MODE=oauth\nPUBLISHING_ENABLED=true\nAI_PUBLISHER_BASE_URL=http://service-ai-publisher:3014\nAUTH_INTROSPECTION_SECRET_FILE=/run/secrets/introspection\nOPENAI_API_KEY=private-test-value\n')
         self.env.chmod(0o600)
         self.secret = self.root / 'introspection'
         self.secret.touch()
@@ -60,7 +60,7 @@ class DeploymentTests(unittest.TestCase):
         self.deploy()
         self.assertEqual(self.env.read_bytes(), before)
         run = next(args for args in self.calls if args[0] == 'run')
-        self.assertIn('type=volume,source=ngx-publisher-runs,target=/var/lib/ngx-publishing', run)
+        self.assertFalse(any('ngx-publisher-runs' in arg for arg in run))
         self.assertIn('--read-only', run)
         self.assertNotIn('-p', run)
         self.assertNotIn('private-test-value', str(self.calls))

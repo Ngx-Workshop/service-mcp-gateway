@@ -1,7 +1,7 @@
 import {
-  publishingDefinitions,
-  publishingContractSchemas,
-} from './publishing/publishing.schemas';
+  mcpPublisherContract,
+  publisherSchemas,
+} from '@tmdjr/service-ai-publisher-contracts';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'node:fs';
@@ -34,12 +34,10 @@ async function generate() {
         .build()
     );
     const schemas = Object.fromEntries(
-      Object.entries({ ...contractSchemas, ...publishingContractSchemas }).map(
-        ([name, schema]) => [
-          name,
-          z.toJSONSchema(schema, { target: 'openapi-3.0', io: 'input' }),
-        ]
-      )
+      Object.entries(contractSchemas).map(([name, schema]) => [
+        name,
+        z.toJSONSchema(schema, { target: 'openapi-3.0', io: 'input' }),
+      ])
     );
     const artifact = {
       name: 'ngx-workshop-catalog',
@@ -51,17 +49,7 @@ async function generate() {
         inputSchema: z.toJSONSchema(definition.inputSchema),
         outputSchema: z.toJSONSchema(definition.outputSchema),
       })),
-      publishing: {
-        endpoint: '/mcp/publishing',
-        authentication: 'platform administrator bearer',
-        tools: Object.entries(publishingDefinitions).map(([name, d]) => ({
-          name,
-          description: d.description,
-          annotations: d.annotations,
-          inputSchema: z.toJSONSchema(d.inputSchema, { io: 'input' }),
-          outputSchema: z.toJSONSchema(d.outputSchema),
-        })),
-      },
+      publishing: mcpPublisherContract.publishing,
       errorSchema: z.toJSONSchema(contractSchemas.ToolError),
     };
     writeFileSync(
@@ -71,7 +59,11 @@ async function generate() {
           ...document,
           components: {
             ...document.components,
-            schemas: { ...document.components?.schemas, ...schemas },
+            schemas: {
+              ...document.components?.schemas,
+              ...schemas,
+              ...publisherSchemas,
+            },
           },
         },
         null,

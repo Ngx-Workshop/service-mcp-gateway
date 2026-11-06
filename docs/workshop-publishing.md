@@ -121,3 +121,30 @@ migration is required. The owner adapter allows 70 seconds for preflight and exi
 lab verify/publish (owner suite budget is 60 seconds); the facade remains 180 seconds.
 The publisher polls preparation in short requests instead of holding generation open.
 Tests never call paid providers. See specs/008-workshop-preparation/handoff.md.
+
+### Preflight rollout troubleshooting
+
+If structural checks pass but all executable checks immediately fail without
+per-test results, inspect the coding-labs service boundary before rewriting content.
+POST /lab-preflight must be deployed to the owner first. An unauthenticated probe
+should be rejected by its administrator guard (401), not report Cannot POST (404).
+A locally served publisher still calls the deployed backend when loaded in the
+administrator shell; a local frontend does not imply local lab execution.
+
+Fixed preflight diagnostics distinguish 404 rollout mismatch, 401/403 authorization,
+400 rejected contract/content, 413 size, 429 runner capacity, 503 execution service,
+timeout/connection and inconsistent result totals. These boundary failures block
+readiness but do not trigger a paid content rewrite. Actual returned failing tests
+remain content failures eligible for the bounded repair. Existing failed preparation
+reports are historical snapshots; run Validate changes after fixing the service.
+
+## AI publisher extraction — 2026-11-06
+
+Publishing implementation, generation, preparation checks, skills and receipts now
+belong to service-ai-publisher (port 3014). This gateway retains only bounded forwarding
+for /publisher/tools and /mcp/publishing; configure PUBLISHING_ENABLED=true and
+AI_PUBLISHER_BASE_URL=http://service-ai-publisher:3014. It no longer needs model
+credentials, authoring-owner URLs or journal storage. Catalog OAuth/ingress is unchanged.
+Gateway contracts preserve existing authoring exports using a packaged publisher
+contract snapshot. Historical publishing deployment instructions above describe the
+pre-extraction system. See specs/009-publisher-migration/handoff.md for current rollout.

@@ -20,6 +20,21 @@ describe('Local catalog configuration', () => {
       },
     });
   });
+  it('requires an explicit trusted publisher URL only when forwarding is enabled', () => {
+    expect(() =>
+      loadCatalogConfig({ ...valid, PUBLISHING_ENABLED: 'true' })
+    ).toThrow();
+    expect(
+      loadCatalogConfig({
+        ...valid,
+        PUBLISHING_ENABLED: 'true',
+        AI_PUBLISHER_BASE_URL: 'http://localhost:3014/',
+        // Legacy model and journal settings no longer belong to this service.
+        PUBLISHING_JOURNAL_DIRECTORY: 'relative',
+        PUBLISHING_MODELS_JSON: 'invalid',
+      }).publisherBaseUrl
+    ).toBe('http://localhost:3014');
+  });
   it.each([
     '',
     'file:///etc/passwd',

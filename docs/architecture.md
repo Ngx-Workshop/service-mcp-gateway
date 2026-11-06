@@ -97,3 +97,14 @@ content-bound readiness; `workshop-checks.ts` owns pure checks/hash;
 coding-labs /lab-preflight. Publishing retains journals and now snapshots preparation
 evidence and reads back the prepared workshop journey before completion. Public
 catalog discovery remains three read-only tools. See workshop-publishing.md.
+
+## AI publisher extraction — 2026-11-06
+
+Publishing implementation, generation, preparation checks, skills and receipts now
+belong to service-ai-publisher (port 3014). This gateway retains only bounded forwarding
+for /publisher/tools and /mcp/publishing; configure PUBLISHING_ENABLED=true and
+AI_PUBLISHER_BASE_URL=http://service-ai-publisher:3014. It no longer needs model
+credentials, authoring-owner URLs or journal storage. Catalog OAuth/ingress is unchanged.
+Gateway contracts preserve existing authoring exports using a packaged publisher
+contract snapshot. Historical publishing deployment instructions above describe the
+pre-extraction system. See specs/009-publisher-migration/handoff.md for current rollout.

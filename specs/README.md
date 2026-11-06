@@ -17,3 +17,5 @@ plan, tasks and handoff for work without prior conversation context.
 | 007-publisher-options | Implemented; live integration pending | [Spec](007-publisher-options/spec.md) | [Plan](007-publisher-options/plan.md) | [Tasks](007-publisher-options/tasks.md) | [Handoff](007-publisher-options/handoff.md) |
 
 - [008 — Workshop preparation skills and checks](008-workshop-preparation/spec.md): Implemented; production acceptance pending.
+
+| Publisher migration | Implemented; integration pending | [009](./009-publisher-migration/spec.md) | [Plan](./009-publisher-migration/plan.md) | [Tasks](./009-publisher-migration/tasks.md) | [Handoff](./009-publisher-migration/handoff.md) |
