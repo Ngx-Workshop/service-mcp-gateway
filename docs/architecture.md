@@ -88,3 +88,12 @@ before listening. See [actual launch evidence](production-execution-2026-10-12.m
 ## Automatic delivery
 
 Main pushes validate, publish contracts via npm OIDC, then promote the exact validated Docker artifact. Deployment preserves the host-owned environment, private ingress and persistent publishing volume, checks readiness through the trusted proxy and restores the previous container on failure. See [delivery runbook](automatic-delivery.md).
+
+## Workshop preparation — 2026-11-05
+
+`workshop-preparation.service.ts` owns bounded private generation/check jobs and
+content-bound readiness; `workshop-checks.ts` owns pure checks/hash;
+`authoring-skills.ts` loads deployed Markdown assets. Domain execution remains in
+coding-labs /lab-preflight. Publishing retains journals and now snapshots preparation
+evidence and reads back the prepared workshop journey before completion. Public
+catalog discovery remains three read-only tools. See workshop-publishing.md.

@@ -14,6 +14,7 @@ import { CATALOG_CONFIG, CatalogConfig } from '../mcp/catalog.config';
 import { PublisherIdentity, PublishingOwnerClient } from './owner.client';
 import {
   publishInputSchema,
+  PreparationReport,
   publishingReceiptSchema,
 } from './publishing.schemas';
 const resource = z
@@ -42,6 +43,17 @@ export class PublishingRunService {
     if (run.subject !== identity.subject)
       throw new Error('Receipt is owned by another administrator');
     return run;
+  }
+  async find(
+    id: string,
+    identity: PublisherIdentity
+  ): Promise<PublishingRun | undefined> {
+    try {
+      return await this.get(id, identity);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+      throw error;
+    }
   }
   async list(identity: PublisherIdentity) {
     if (!this.config.publishing) throw new Error('Publishing disabled');
@@ -76,7 +88,8 @@ export class PublishingRunService {
   }
   async publish(
     value: unknown,
-    identity: PublisherIdentity
+    identity: PublisherIdentity,
+    preparation?: Omit<PreparationReport, 'draft'>
   ): Promise<PublishingRun> {
     const { requestId, draft } = publishInputSchema.parse(value);
     const hash = createHash('sha256')
@@ -96,6 +109,7 @@ export class PublishingRunService {
         draftHash: hash,
         status: 'running',
         steps: [],
+        ...(preparation ? { preparation } : {}),
       };
       try {
         await writeFile(this.file(requestId), JSON.stringify(run), {
@@ -184,6 +198,7 @@ export class PublishingRunService {
               )
             );
         }
+        const labIds: string[] = [];
         for (const [index, lab] of draft.labs.entries()) {
           const id = resource.parse(
             await step(`create_lab_${index}`, () =>
@@ -197,6 +212,7 @@ export class PublishingRunService {
               )
             )
           )._id;
+          labIds.push(id);
           const version = resource
             .extend({ contentHash: z.string().min(1) })
             .parse(
@@ -266,11 +282,89 @@ export class PublishingRunService {
             identity
           )
         );
+        if (preparation) {
+          const journey = await step('verify_workshop_journey', async () => {
+            const list = z
+              .array(z.unknown())
+              .parse(
+                await this.owner.document(
+                  { operation: 'workshops', sectionId: draft.sectionId },
+                  identity
+                )
+              );
+            const saved = list.find(
+              (item) =>
+                item &&
+                typeof item === 'object' &&
+                '_id' in item &&
+                item._id === created._id
+            );
+            const result = z
+              .object({
+                sectionId: z.string(),
+                workshopDocuments: z.array(
+                  z.object({
+                    _id: z.string(),
+                    kind: z.string(),
+                    name: z.string(),
+                    sortId: z.number().int(),
+                    resourceId: z.string().optional(),
+                  })
+                ),
+              })
+              .safeParse(saved);
+            const expected = [
+              ...draft.pages.map((page) => ({
+                kind: 'PAGE',
+                name: page.name,
+                resourceId: undefined as string | undefined,
+              })),
+              ...draft.labs.map((lab, index) => ({
+                kind: 'CODING_LAB',
+                name: lab.metadata.title,
+                resourceId: labIds[index],
+              })),
+              {
+                kind: 'ASSESSMENT_TEST',
+                name: draft.assessment.name,
+                resourceId: assessmentId,
+              },
+            ];
+            const entries = result.success
+              ? [...result.data.workshopDocuments].sort(
+                  (a, b) => a.sortId - b.sortId
+                )
+              : [];
+            const passed =
+              result.success &&
+              result.data.sectionId === draft.sectionId &&
+              entries.length === expected.length &&
+              new Set(entries.map((entry) => entry._id)).size ===
+                entries.length &&
+              entries[0]?._id === first._id &&
+              entries.every(
+                (entry, index) =>
+                  entry.sortId === index &&
+                  entry.kind === expected[index].kind &&
+                  entry.name === expected[index].name &&
+                  entry.resourceId === expected[index].resourceId
+              );
+            return {
+              passed,
+              checkedEntries: entries.length,
+              detail: passed
+                ? 'Saved workshop journey matches the reviewed page, lab and assessment order and resource identities.'
+                : 'Saved workshop journey differs from the reviewed materials. Inspect references before considering publication complete.',
+            };
+          });
+          if (!z.object({ passed: z.boolean() }).parse(journey).passed)
+            throw new Error('Workshop journey verification failed');
+        }
         run.status = 'complete';
       } catch {
         run.status = 'needs_recovery';
         run.message =
-          'Publishing stopped. Inspect completed resources and reconcile the last pending step before retrying. No automatic rollback or replay occurred.';
+          'Publishing stopped. Inspect completed resources and reconcile the last recorded step before retrying. No automatic rollback or replay occurred.';
       }
       await this.save(run);
       return run;

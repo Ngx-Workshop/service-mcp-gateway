@@ -59,7 +59,11 @@ export class PublishingOwnerClient {
         url: `${base}${path}`,
         data,
         headers: { Authorization: `Bearer ${identity.token}` },
-        timeout: 30000,
+        timeout:
+          path === '/lab-preflight' ||
+          /\/versions\/[^/]+\/(verify|publish)$/.test(path)
+            ? 70000
+            : 30000,
         maxRedirects: 0,
         maxContentLength: RESPONSE_BYTES,
         maxBodyLength: 8 * 1024 * 1024,

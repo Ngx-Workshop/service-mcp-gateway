@@ -120,6 +120,172 @@ export interface components {
                 message: string;
             };
         };
+        PreparationReport: {
+            /** Format: uuid */
+            preparationId: string;
+            /** @enum {string} */
+            status: "running" | "complete" | "failed";
+            ready: boolean;
+            createdAt: string;
+            updatedAt: string;
+            activities: {
+                id: string;
+                label: string;
+                /** @enum {string} */
+                kind: "skill" | "generation" | "check" | "review" | "repair";
+                /** @enum {string} */
+                status: "pending" | "running" | "passed" | "failed" | "skipped" | "review_required";
+                detail: string;
+                startedAt?: string;
+                finishedAt?: string;
+                skillVersion?: string;
+                skillHash?: string;
+            }[];
+            repairCount: number;
+            model?: string;
+            draft?: {
+                learningPlan?: {
+                    prerequisites: string[];
+                    objectives: {
+                        objective: string;
+                        pageIndexes: number[];
+                        labIndexes: number[];
+                        questionIndexes: number[];
+                    }[];
+                };
+                sectionId: string;
+                name: string;
+                summary: string;
+                level: number;
+                pages: {
+                    name: string;
+                    blocks: {
+                        blockId: string;
+                        sortIndex: number;
+                        /** @enum {string} */
+                        componentInstanceName: "HeaderBlockComponent" | "ParagraphBlockComponent" | "NgxEditorJs2BlockquotesComponent" | "NgxEditorJs2PanelComponent" | "NgxEditorJs2ImageComponent" | "NgxEditorJs2CodemirrorComponent" | "NgxEditorJs2MermaidjsComponent" | "NgxEditorJs2PopQuizComponent";
+                        savedAction: string;
+                        dataClean: string;
+                    }[];
+                }[];
+                labs: {
+                    metadata: {
+                        title: string;
+                        slug: string;
+                        summary: string;
+                        /** @enum {string} */
+                        difficulty: "intro" | "easy" | "medium" | "hard";
+                    };
+                    version: {
+                        /** @enum {string} */
+                        language: "javascript" | "typescript";
+                        promptMarkdown: string;
+                        hints: string[];
+                        starterCode: string;
+                        referenceSolution: {
+                            code: string;
+                        };
+                        sampleTests: {
+                            name: string;
+                            /** @enum {string} */
+                            kind: "io" | "unit";
+                            input?: unknown;
+                            expected?: unknown;
+                            comparator?: {
+                                /** @enum {string} */
+                                kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                                tolerance?: number;
+                                normalizeWhitespace?: boolean;
+                                ignoreCase?: boolean;
+                                customComparatorId?: string;
+                            };
+                            testCode?: string;
+                            /** @enum {string} */
+                            framework?: "jest" | "vitest";
+                        }[];
+                        hiddenTests: {
+                            name: string;
+                            /** @enum {string} */
+                            kind: "io" | "unit";
+                            input?: unknown;
+                            expected?: unknown;
+                            comparator?: {
+                                /** @enum {string} */
+                                kind: "deepEqual" | "strictEqual" | "numberTolerance" | "stringNormalized" | "custom";
+                                tolerance?: number;
+                                normalizeWhitespace?: boolean;
+                                ignoreCase?: boolean;
+                                customComparatorId?: string;
+                            };
+                            testCode?: string;
+                            /** @enum {string} */
+                            framework?: "jest" | "vitest";
+                        }[];
+                        runner: {
+                            timeoutMs: number;
+                            entryFnName: string;
+                        };
+                    };
+                }[];
+                assessment: {
+                    name: string;
+                    subject: string;
+                    sectionTitle?: string;
+                    level: number;
+                    testQuestions: {
+                        question: string;
+                        choices: {
+                            value: string;
+                        }[];
+                        answer: string;
+                        correctResponse: string;
+                        incorrectResponse: string;
+                    }[];
+                };
+            };
+            draftHash?: string;
+            message?: string;
+        };
+        PreparationActivity: {
+            id: string;
+            label: string;
+            /** @enum {string} */
+            kind: "skill" | "generation" | "check" | "review" | "repair";
+            /** @enum {string} */
+            status: "pending" | "running" | "passed" | "failed" | "skipped" | "review_required";
+            detail: string;
+            startedAt?: string;
+            finishedAt?: string;
+            skillVersion?: string;
+            skillHash?: string;
+        };
+        StartWorkshopPreparationInput: {
+            /** @enum {string} */
+            operation: "generate";
+            /** Format: uuid */
+            preparationId?: string;
+            input: {
+                brief: string;
+                model?: string;
+                sectionId: string;
+                level: number;
+            };
+        } | {
+            /** @enum {string} */
+            operation: "check";
+            /** Format: uuid */
+            preparationId?: string;
+            draft: unknown;
+        };
+        LearningPlan: {
+            prerequisites: string[];
+            objectives: {
+                objective: string;
+                pageIndexes: number[];
+                labIndexes: number[];
+                questionIndexes: number[];
+            }[];
+        };
         PublishingModelCatalog: {
             models: {
                 id: string;
@@ -135,6 +301,15 @@ export interface components {
             outputUsdPerMillion: number | null;
         };
         WorkshopDraft: {
+            learningPlan?: {
+                prerequisites: string[];
+                objectives: {
+                    objective: string;
+                    pageIndexes: number[];
+                    labIndexes: number[];
+                    questionIndexes: number[];
+                }[];
+            };
             sectionId: string;
             name: string;
             summary: string;
@@ -239,6 +414,32 @@ export interface components {
                 result?: unknown;
             }[];
             message?: string;
+            preparation?: {
+                /** Format: uuid */
+                preparationId: string;
+                /** @enum {string} */
+                status: "running" | "complete" | "failed";
+                ready: boolean;
+                createdAt: string;
+                updatedAt: string;
+                activities: {
+                    id: string;
+                    label: string;
+                    /** @enum {string} */
+                    kind: "skill" | "generation" | "check" | "review" | "repair";
+                    /** @enum {string} */
+                    status: "pending" | "running" | "passed" | "failed" | "skipped" | "review_required";
+                    detail: string;
+                    startedAt?: string;
+                    finishedAt?: string;
+                    skillVersion?: string;
+                    skillHash?: string;
+                }[];
+                repairCount: number;
+                model?: string;
+                draftHash?: string;
+                message?: string;
+            };
         };
         ManageDocumentInput: {
             /** @enum {string} */
@@ -567,6 +768,15 @@ export interface components {
             /** Format: uuid */
             requestId: string;
             draft: {
+                learningPlan?: {
+                    prerequisites: string[];
+                    objectives: {
+                        objective: string;
+                        pageIndexes: number[];
+                        labIndexes: number[];
+                        questionIndexes: number[];
+                    }[];
+                };
                 sectionId: string;
                 name: string;
                 summary: string;
@@ -657,6 +867,8 @@ export interface components {
                     }[];
                 };
             };
+            /** Format: uuid */
+            preparationId?: string;
         };
     };
     responses: never;

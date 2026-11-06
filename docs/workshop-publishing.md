@@ -57,3 +57,67 @@ Defaults are the above standard short-context reference rates checked against [o
 PUBLISHING_IMAGE_MODEL defaults to `gpt-image-2.5-sunburst`. Explicit generation uses [Images API](https://developers.openai.com/api/docs/guides/image-generation), one low-quality 1024×1024 PNG, a 120-second provider timeout and bounded response. Provider bytes are uploaded through the existing authenticated service-uploader adapter; no URL is fabricated, and no workshops are published by this command. It incurs a separate provider charge. Upload storage must succeed before a usable asset returns.
 
 History scans the existing receipt journal, validates each UUID receipt, filters by authenticated subject and returns the latest 100 by modification time. Missing directories yield empty history. Foreign, malformed or unreadable receipts are omitted without disclosure; directory errors fail the request. No DB or receipt migration. Deploy the gateway before the matching publisher bundle; the MFE vendors this additive contracts package, so registry publication is independent. Verify provider model access, real storage and shell authorization after rollout.
+
+## Preparation skills and evidence — 2026-11-05
+
+The administrator endpoint now has twelve tools. `start_workshop_preparation` accepts
+`{operation:"generate", preparationId?, input:{brief,sectionId,level,model?}}` or
+`{operation:"check", preparationId?, draft}`. `get_workshop_preparation` accepts the
+returned preparationId. Both return a typed `{data:PreparationReport}` envelope.
+A caller-chosen UUID makes repeated starts idempotent within the current process:
+it is bound to authenticated subject and parsed input hash; changed inputs conflict.
+After a lost start response, poll that same ID before starting another paid request.
+Jobs are process-local, bounded to two active globally, one active per subject and
+100 retained; finished jobs expire after one hour or may be evicted for capacity.
+Restart loses preparation jobs. This is not a distributed queue or durable generation
+journal. Publication receipts remain durable in the existing private volume.
+
+Generation loads four actual versioned SKILL.md assets from `src/publishing/skills`:
+planning, documentation, executable lab and assessment. Nest copies these into dist,
+including Docker runtime images. Events record their version and SHA-256 fingerprint
+when supplied to the authoring/revision request. Supply is observable; successful
+instruction-following is not asserted by a skill event. The structured generation
+format now includes a learningPlan with prerequisites and objective-to-page/lab/
+question indexes. The formatter continues to own IDs, order and nested serialization.
+The legacy generation tool omits learningPlan for older strict clients; it remains
+a generation operation, not a full preparation report.
+
+Checks cover schema/answers/subject/level, all eight block action families, editor
+serialization, objective mappings and executable IO-test constraints. The lab owner
+receives POST /lab-preflight three times per lab: reference, starter and a constant-
+answer baseline. Inputs are one JSON argument, not a spread argument list. Reference
+must pass all cases; starter must leave work and cannot time out. A baseline only
+passes discrimination when at least one case fails by comparison, without runtime
+errors/timeouts. Identical expected outputs defer that baseline judgment to human
+review because constant-output tasks can be legitimate. No arbitrary mutation suite
+or full TypeScript project type checking is claimed.
+
+Generated drafts also receive a separate structured AI teaching/alignment review,
+explicitly labeled model judgment. A content failure can trigger at most one full
+revision and rerun of checks/review. Provider failures, invalid initial generation
+and unavailable runner checks do not cause paid retry loops. Import/check performs
+no model call and never claims that authoring skills or AI review ran. Imported
+content needs a learningPlan before objective coverage passes. Model reviewing can
+identify candidate errors but does not establish factual truth. Administrator preview,
+diagram source/rendering, factual accuracy and teaching quality remain review items;
+no automatic visual rendering or Mermaid-parser pass is fabricated.
+
+Preparation returns normalized draft/hash and actual timestamped events, preserving
+earlier failed attempts. The updated publisher submits preparationId on publication.
+New runs require an owned, ready, unexpired report with an identical normalized draft
+hash. Explicit stale/unavailable errors occur before a new publication journal/write,
+so the client can recheck without treating them as uncertain publication. Already-
+recorded request IDs retain existing duplicate/recovery behavior even after preparation
+expires. The journal stores report metadata/events without a second copy of draft.
+After prepared publication, a final read-back checks saved workshop journey count,
+order, section, page identity, labels and exact lab/assessment resource references.
+Mismatch is recorded as a completed failed check with needs_recovery; no rollback.
+Legacy publication callers without preparationId retain the existing owner-verified
+publication path and do not gain a preparation success claim.
+
+Delivery: deploy coding-labs /lab-preflight first, then gateway with skill assets,
+then publisher contracts 1.3.0 and matching bundle. No document or assessment schema
+migration is required. The owner adapter allows 70 seconds for preflight and existing
+lab verify/publish (owner suite budget is 60 seconds); the facade remains 180 seconds.
+The publisher polls preparation in short requests instead of holding generation open.
+Tests never call paid providers. See specs/008-workshop-preparation/handoff.md.

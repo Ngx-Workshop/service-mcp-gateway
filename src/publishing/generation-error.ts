@@ -1,6 +1,15 @@
 import { isAxiosError } from 'axios';
 
 const messages: Record<string, string> = {
+  PREPARATION_CONFLICT:
+    'Preparation ID belongs to different inputs. Resume the original preparation or start fresh checks.',
+  PREPARATION_UNAVAILABLE:
+    'Preparation is unavailable or expired. Run checks again before publishing.',
+  PREPARATION_BUSY:
+    'Preparation is already running. Resume its progress or wait for the current checks.',
+  PREPARATION_STALE:
+    'The draft changed or has unresolved checks. Run checks again before publishing.',
+
   MODEL_NOT_CONFIGURED:
     'Draft generation is not configured. Ask the server administrator to configure the model and API key.',
   GENERATION_IMAGE_LOOKUP_FAILED:

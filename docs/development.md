@@ -111,3 +111,13 @@ before later release work.
 
 ## Workshop publishing
 See [configuration and recovery](workshop-publishing.md). The normal test suite includes publishing tests; protocol e2e includes the separate admin endpoint. Tests use doubles and temporary receipts, never real workshops or paid model calls.
+
+## Preparation verification — 2026-11-05
+
+Normal tests cover skills supplied to actual request instructions, private progress,
+objective/runner checks, bounded repair, constant-output review, stale hashes and
+receipt recovery. Protocol e2e covers start/get through the official MCP client and
+foreign-subject denial. Build must copy all four SKILL.md assets into dist/publishing/
+skills; Docker copies dist. Run npm run build, tests, protocol e2e, lint:check and
+contract generation/build after changes. Frontend uses the generated 1.3.0 contract
+tarball; no registry publication or deployment is implied by local generation.

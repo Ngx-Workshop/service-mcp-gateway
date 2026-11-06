@@ -1,3 +1,4 @@
+import { WorkshopPreparationService } from './publishing/workshop-preparation.service';
 import { AuthClientService } from '@tmdjr/ngx-auth-client';
 import { PublishingController } from './publishing/publishing.controller';
 import { PublishingOwnerClient } from './publishing/owner.client';
@@ -22,6 +23,7 @@ import { CATALOG_CONFIG, loadCatalogConfig } from './mcp/catalog.config';
     PublishingRunService,
     PublishingToolsService,
     DraftAgentService,
+    WorkshopPreparationService,
     CatalogClient,
     CatalogToolsService,
     {

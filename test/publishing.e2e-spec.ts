@@ -23,6 +23,30 @@ describe('Administrator publishing protocol', () => {
     assessment: jest.fn(),
     lab: jest.fn(),
     image: jest.fn(),
+    request: jest
+      .fn()
+      .mockImplementation(
+        (
+          _owner,
+          _method,
+          _path,
+          _identity,
+          version: { referenceSolution: { code: string } }
+        ) => {
+          const passed =
+            version.referenceSolution.code ===
+            publishingDraft.labs[0].version.referenceSolution.code;
+          return Promise.resolve({
+            passed,
+            totalTests: 2,
+            passedTests: passed ? 2 : 1,
+            results: [
+              { name: 'sample', status: 'passed' },
+              { name: 'hidden', status: passed ? 'passed' : 'failed' },
+            ],
+          });
+        }
+      ),
   };
   beforeAll(async () => {
     directory = await mkdtemp(join(tmpdir(), 'ngx-publishing-protocol-'));
@@ -47,9 +71,19 @@ describe('Administrator publishing protocol', () => {
           headers: { authorization: string };
           user?: unknown;
         }) => {
-          if (req.headers.authorization !== 'Bearer admin-token')
+          if (
+            !['Bearer admin-token', 'Bearer other-admin'].includes(
+              req.headers.authorization
+            )
+          )
             throw new Error('Invalid token');
-          req.user = { sub: 'admin', role: 'admin' };
+          req.user = {
+            sub:
+              req.headers.authorization === 'Bearer other-admin'
+                ? 'other-admin'
+                : 'admin',
+            role: 'admin',
+          };
           return Promise.resolve(true);
         },
       })
@@ -63,6 +97,59 @@ describe('Administrator publishing protocol', () => {
     await app?.close();
     await rm(directory, { recursive: true, force: true });
   });
+  it('exposes private asynchronous checks through MCP and rejects foreign report reads', async () => {
+    const client = new Client({ name: 'preparation-test', version: '1' });
+    await client.connect(
+      new StreamableHTTPClientTransport(new URL(`${url}/mcp/publishing`), {
+        requestInit: { headers: { Authorization: 'Bearer admin-token' } },
+      })
+    );
+    try {
+      const draft = {
+        ...publishingDraft,
+        learningPlan: {
+          prerequisites: ['JavaScript'],
+          objectives: [
+            {
+              objective: 'Double a number',
+              pageIndexes: [0],
+              labIndexes: [0],
+              questionIndexes: [0],
+            },
+          ],
+        },
+      };
+      const started = await client.callTool({
+        name: 'start_workshop_preparation',
+        arguments: { operation: 'check', draft },
+      });
+      const first = started.structuredContent as {
+        data: { preparationId: string; status: string; ready: boolean };
+      };
+      let report = first.data;
+      for (let i = 0; i < 10 && report.status === 'running'; i++) {
+        const result = await client.callTool({
+          name: 'get_workshop_preparation',
+          arguments: { preparationId: report.preparationId },
+        });
+        report = (result.structuredContent as typeof first).data;
+      }
+      expect(report.status).toBe('complete');
+      expect(report.ready).toBe(true);
+      const foreign = await request(url)
+        .post('/publisher/tools')
+        .set('Authorization', 'Bearer other-admin')
+        .send({
+          name: 'get_workshop_preparation',
+          input: { preparationId: report.preparationId },
+        })
+        .expect(200);
+      expect((foreign.body as { isError?: boolean }).isError).toBe(true);
+      expect(JSON.stringify(foreign.body)).not.toContain('Double a number');
+    } finally {
+      await client.close();
+    }
+  });
   it('rejects missing and catalog-only credentials before tools execute', async () => {
     await request(url)
       .post('/publisher/tools')
@@ -75,7 +162,7 @@ describe('Administrator publishing protocol', () => {
       .expect(401);
     expect(owner.assessment).not.toHaveBeenCalled();
   });
-  it('discovers ten authoring tools with official client and validates editor draft', async () => {
+  it('discovers twelve authoring tools with official client and validates editor draft', async () => {
     const client = new Client(
       { name: 'publisher-test', version: '1' },
       { versionNegotiation: { mode: { pin: '2026-07-28' } } }
@@ -87,7 +174,7 @@ describe('Administrator publishing protocol', () => {
         })
       );
       const discovery = await client.listTools();
-      expect(discovery.tools).toHaveLength(10);
+      expect(discovery.tools).toHaveLength(12);
       expect(
         discovery.tools.find((t) => t.name === 'publish_workshop')?.annotations
           ?.readOnlyHint

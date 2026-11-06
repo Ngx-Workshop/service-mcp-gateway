@@ -1,3 +1,4 @@
+import { authoringSkills } from './authoring-skills';
 import { z } from 'zod';
 import { generationSchema, formatGeneratedDraft } from './generation-format';
 import { readFileSync } from 'node:fs';
@@ -32,6 +33,17 @@ const config = (directory: string) =>
     PUBLISHING_JOURNAL_DIRECTORY: directory,
   });
 const generatedFixture = {
+  learningPlan: {
+    prerequisites: ['Basic JavaScript'],
+    objectives: [
+      {
+        objective: 'Double a number',
+        pageIndexes: [0],
+        labIndexes: [0],
+        questionIndexes: [0],
+      },
+    ],
+  },
   name: publishingDraft.name,
   summary: publishingDraft.summary,
   pages: publishingDraft.pages.map((page) => ({
@@ -74,6 +86,24 @@ const generatedFixture = {
   },
 };
 describe('draft generation', () => {
+  it('enforces action enums on imported code and diagram blocks', () => {
+    for (const componentInstanceName of [
+      'NgxEditorJs2CodemirrorComponent',
+      'NgxEditorJs2MermaidjsComponent',
+    ]) {
+      expect(
+        blocksSchema.safeParse([
+          {
+            blockId: 'block',
+            sortIndex: 0,
+            componentInstanceName,
+            savedAction: 'invalid',
+            dataClean: 'source',
+          },
+        ]).success
+      ).toBe(false);
+    }
+  });
   it('uses an allowed selected model and rejects unknown models before provider calls', async () => {
     const settings = config('/tmp/unused');
     settings.publishing!.apiKey = 'private-key';
@@ -110,6 +140,11 @@ describe('draft generation', () => {
     expect(
       ((post.mock.calls[0] as unknown[])[1] as { model: string }).model
     ).toBe(model);
+    const supplied = (
+      (post.mock.calls[0] as unknown[])[1] as { instructions: string }
+    ).instructions;
+    for (const skill of authoringSkills())
+      expect(supplied).toContain(skill.instructions);
     expect(agent.models().models[1].inputUsdPerMillion).toBeGreaterThan(0);
     await expect(
       agent.generate(
@@ -649,6 +684,74 @@ describe('publishing receipts', () => {
         identity
       )
     ).rejects.toThrow('different draft');
+  });
+  it('checks saved journey identities for prepared publication and journals mismatches', async () => {
+    for (const correct of [true, false]) {
+      const adapter = owner();
+      const original = adapter.document.getMockImplementation()! as (value: {
+        operation: string;
+      }) => Promise<unknown>;
+      adapter.document.mockImplementation((value: { operation: string }) =>
+        value.operation === 'workshops'
+          ? Promise.resolve([
+              {
+                _id: id(1),
+                sectionId: publishingDraft.sectionId,
+                workshopDocuments: [
+                  {
+                    _id: id(2),
+                    kind: 'PAGE',
+                    name: publishingDraft.pages[0].name,
+                    sortId: 0,
+                  },
+                  {
+                    _id: id(6),
+                    kind: 'CODING_LAB',
+                    name: publishingDraft.labs[0].metadata.title,
+                    sortId: 1,
+                    resourceId: correct ? id(3) : id(99),
+                  },
+                  {
+                    _id: id(7),
+                    kind: 'ASSESSMENT_TEST',
+                    name: publishingDraft.assessment.name,
+                    sortId: 2,
+                    resourceId: id(5),
+                  },
+                ],
+              },
+            ])
+          : original(value)
+      );
+      const service = new PublishingRunService(
+        adapter as unknown as PublishingOwnerClient,
+        config(directory)
+      );
+      const evidence = {
+        preparationId: randomUUID(),
+        status: 'complete' as const,
+        ready: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        activities: [],
+        repairCount: 0,
+      };
+      const result = await service.publish(
+        { requestId: randomUUID(), draft: publishingDraft },
+        identity,
+        evidence
+      );
+      expect(result.status).toBe(correct ? 'complete' : 'needs_recovery');
+      const last = result.steps.at(-1);
+      expect(last?.name).toBe('verify_workshop_journey');
+      expect(last?.status).toBe('complete');
+      expect(last?.result).toEqual(
+        expect.objectContaining({ passed: correct })
+      );
+      expect(
+        (await service.get(result.requestId, identity)).preparation
+      ).toEqual(evidence);
+    }
   });
   it('stops before lab publication on verification failure and retains resources', async () => {
     const adapter = owner(false);

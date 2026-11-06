@@ -51,6 +51,25 @@ export const editorBlockSchema = z
   .superRefine((b, ctx) => {
     const actions: Partial<Record<typeof b.componentInstanceName, string[]>> = {
       HeaderBlockComponent: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+      NgxEditorJs2BlockquotesComponent: [
+        'display-large',
+        'display-medium',
+        'display-small',
+      ],
+      NgxEditorJs2CodemirrorComponent: [
+        'text/typescript',
+        'text/javascript',
+        'text/html',
+        'text/css',
+        'application/json',
+        'text/plain',
+      ],
+      NgxEditorJs2MermaidjsComponent: ['center', 'flex-start', 'flex-end'],
+      NgxEditorJs2PopQuizComponent: [
+        'display-large',
+        'display-medium',
+        'display-small',
+      ],
       ParagraphBlockComponent: ['small', 'medium', 'large'],
       NgxEditorJs2PanelComponent: ['info', 'note', 'tip', 'warning'],
       NgxEditorJs2ImageComponent: [
@@ -185,8 +204,26 @@ export const labVersionSchema = z
         });
     }
   });
+export const learningPlanSchema = z.strictObject({
+  prerequisites: z.array(z.string().min(1).max(400)).max(20),
+  objectives: z
+    .array(
+      z.strictObject({
+        objective: z.string().min(1).max(600),
+        pageIndexes: z.array(z.number().int().nonnegative()).min(1).max(20),
+        labIndexes: z.array(z.number().int().nonnegative()).min(1).max(10),
+        questionIndexes: z
+          .array(z.number().int().nonnegative())
+          .min(1)
+          .max(100),
+      })
+    )
+    .min(1)
+    .max(20),
+});
 export const workshopDraftSchema = z
   .strictObject({
+    learningPlan: learningPlanSchema.optional(),
     sectionId: sectionIdSchema,
     name: title,
     summary: text,
@@ -233,6 +270,7 @@ export const generateDraftInputSchema = z.strictObject({
 export const publishInputSchema = z.strictObject({
   requestId: z.string().uuid(),
   draft: workshopDraftSchema,
+  preparationId: z.string().uuid().optional(),
 });
 const operation = <const O extends string, T extends z.ZodRawShape>(
   op: O,
@@ -335,11 +373,12 @@ export const imageInputSchema = z.discriminatedUnion('operation', [
 const definition = (
   description: string,
   inputSchema: z.ZodType,
-  annotations = write
+  annotations = write,
+  outputSchema: z.ZodType = publishingResultSchema
 ) => ({
   description,
   inputSchema,
-  outputSchema: publishingResultSchema,
+  outputSchema,
   annotations,
 });
 export const publishingModelSchema = z.strictObject({
@@ -352,7 +391,76 @@ export const publishingModelCatalogSchema = z.strictObject({
   defaultModel: z.string().nullable(),
   imageModel: z.string(),
 });
+export const preparationActivitySchema = z.strictObject({
+  id: z.string(),
+  label: z.string(),
+  kind: z.enum(['skill', 'generation', 'check', 'review', 'repair']),
+  status: z.enum([
+    'pending',
+    'running',
+    'passed',
+    'failed',
+    'skipped',
+    'review_required',
+  ]),
+  detail: z.string().max(4000),
+  startedAt: z.string().optional(),
+  finishedAt: z.string().optional(),
+  skillVersion: z.string().optional(),
+  skillHash: z.string().optional(),
+});
+// Output uses the pre-transform block shape; stored report content is already normalized.
+const reportDraftSchema = workshopDraftSchema.safeExtend({
+  pages: z
+    .array(
+      z.strictObject({
+        name: title,
+        blocks: z.array(editorBlockSchema.in).min(1).max(200),
+      })
+    )
+    .min(1)
+    .max(20),
+});
+export const preparationReportSchema = z.strictObject({
+  preparationId: z.string().uuid(),
+  status: z.enum(['running', 'complete', 'failed']),
+  ready: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  activities: z.array(preparationActivitySchema),
+  repairCount: z.number().int().min(0).max(1),
+  model: z.string().optional(),
+  draft: reportDraftSchema.optional(),
+  draftHash: z.string().optional(),
+  message: z.string().optional(),
+});
+export const startPreparationSchema = z.discriminatedUnion('operation', [
+  z.strictObject({
+    operation: z.literal('generate'),
+    preparationId: z.string().uuid().optional(),
+    input: generateDraftInputSchema,
+  }),
+  z.strictObject({
+    operation: z.literal('check'),
+    preparationId: z.string().uuid().optional(),
+    draft: z.unknown(),
+  }),
+]);
+export type PreparationReport = z.infer<typeof preparationReportSchema>;
+export type PreparationActivity = z.infer<typeof preparationActivitySchema>;
 export const publishingDefinitions = {
+  start_workshop_preparation: definition(
+    'Start private workshop generation or checks without owner writes. Poll get_workshop_preparation for skills, evidence and results. Generation includes at most one repair.',
+    startPreparationSchema,
+    { ...write, destructiveHint: false },
+    z.strictObject({ data: preparationReportSchema })
+  ),
+  get_workshop_preparation: definition(
+    'Read private preparation progress and checked draft; jobs expire one hour after completion or on restart.',
+    z.strictObject({ preparationId: z.string().uuid() }),
+    read,
+    z.strictObject({ data: preparationReportSchema })
+  ),
   list_publishing_models: definition(
     'List server-approved draft models and reference USD token pricing.',
     z.strictObject({}),
@@ -412,8 +520,13 @@ export const publishingReceiptSchema = z.strictObject({
     })
   ),
   message: z.string().optional(),
+  preparation: preparationReportSchema.omit({ draft: true }).optional(),
 });
 export const publishingContractSchemas = {
+  PreparationReport: preparationReportSchema,
+  PreparationActivity: preparationActivitySchema,
+  StartWorkshopPreparationInput: startPreparationSchema,
+  LearningPlan: learningPlanSchema,
   PublishingModelCatalog: publishingModelCatalogSchema,
   PublishingModel: publishingModelSchema,
   WorkshopDraft: workshopDraftSchema,

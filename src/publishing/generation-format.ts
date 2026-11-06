@@ -4,6 +4,7 @@ import {
   labMetadataSchema,
   labVersionSchema,
   workshopDraftSchema,
+  learningPlanSchema,
 } from './publishing.schemas';
 const content = z.string().min(1).max(100000);
 const block = <const C extends string, const A extends readonly string[]>(
@@ -54,21 +55,13 @@ const generatedBlock = z.union([
     dataClean: generatedQuestion,
   }),
 ]);
-const generatedTest = z.union([
-  z.strictObject({
-    name: z.string().min(1),
-    kind: z.literal('io'),
-    inputJson: content,
-    expectedJson: content,
-    comparator: z.enum(['deepEqual', 'strictEqual']),
-  }),
-  z.strictObject({
-    name: z.string().min(1),
-    kind: z.literal('unit'),
-    testCode: content,
-    framework: z.enum(['jest', 'vitest']),
-  }),
-]);
+const generatedTest = z.strictObject({
+  name: z.string().min(1),
+  kind: z.literal('io'),
+  inputJson: content,
+  expectedJson: content,
+  comparator: z.enum(['deepEqual', 'strictEqual']),
+});
 const generatedVersion = z.strictObject({
   language: labVersionSchema.shape.language,
   promptMarkdown: labVersionSchema.shape.promptMarkdown,
@@ -83,6 +76,7 @@ const generatedVersion = z.strictObject({
 // property is required; arbitrary JSON test values travel as strings, rather
 // than an unsupported open-ended object in a strict output schema.
 export const generationSchema = z.strictObject({
+  learningPlan: learningPlanSchema,
   name: workshopDraftSchema.shape.name,
   summary: workshopDraftSchema.shape.summary,
   pages: z
@@ -110,16 +104,13 @@ export function formatGeneratedDraft(
   input: { sectionId: string; level: number }
 ) {
   const generated = generationSchema.parse(value);
-  const convertTest = (test: z.infer<typeof generatedTest>) =>
-    test.kind === 'unit'
-      ? test
-      : {
-          name: test.name,
-          kind: test.kind,
-          input: JSON.parse(test.inputJson) as unknown,
-          expected: JSON.parse(test.expectedJson) as unknown,
-          comparator: { kind: test.comparator },
-        };
+  const convertTest = (test: z.infer<typeof generatedTest>) => ({
+    name: test.name,
+    kind: test.kind,
+    input: JSON.parse(test.inputJson) as unknown,
+    expected: JSON.parse(test.expectedJson) as unknown,
+    comparator: { kind: test.comparator },
+  });
   const convertQuestion = (q: z.infer<typeof generatedQuestion>) => ({
     question: q.question,
     choices: q.choices.map((value) => ({ value })),
