@@ -66,6 +66,14 @@ class DeploymentTests(unittest.TestCase):
         self.assertNotIn('private-test-value', str(self.calls))
         self.assertNotIn(('start', deployment.NAME), self.calls)
 
+    def test_missing_publisher_destination_names_field_without_exposing_settings(self):
+        self.env.write_text(self.env.read_text().replace(
+            'AI_PUBLISHER_BASE_URL=http://service-ai-publisher:3014\n', ''))
+        with self.assertRaisesRegex(RuntimeError, 'AI_PUBLISHER_BASE_URL') as error:
+            self.deploy()
+        self.assertNotIn('private-test-value', str(error.exception))
+        self.assertEqual(self.calls, [])
+
     def test_checksum_rejected_before_docker(self):
         (self.root / 'image.tar').write_bytes(b'corrupt')
         with self.assertRaisesRegex(RuntimeError, 'checksum'):

@@ -18,4 +18,4 @@ plan, tasks and handoff for work without prior conversation context.
 
 - [008 — Workshop preparation skills and checks](008-workshop-preparation/spec.md): Implemented; production acceptance pending.
 
-| Publisher migration | Implemented; integration pending | [009](./009-publisher-migration/spec.md) | [Plan](./009-publisher-migration/plan.md) | [Tasks](./009-publisher-migration/tasks.md) | [Handoff](./009-publisher-migration/handoff.md) |
+| Publisher migration | Deployed; authoring acceptance pending | [009](./009-publisher-migration/spec.md) | [Plan](./009-publisher-migration/plan.md) | [Tasks](./009-publisher-migration/tasks.md) | [Handoff](./009-publisher-migration/handoff.md) |

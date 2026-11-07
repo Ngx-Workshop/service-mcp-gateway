@@ -41,8 +41,9 @@ def deploy(directory, revision, release):
                 'MCP_AUTH_MODE': 'oauth', 'PUBLISHING_ENABLED': 'true',
                 'AI_PUBLISHER_BASE_URL': 'http://service-ai-publisher:3014',
                 'AUTH_INTROSPECTION_SECRET_FILE': '/run/secrets/introspection'}
-    if any(config.get(key) != value for key, value in required.items()):
-        raise RuntimeError('Runtime configuration does not match production deployment')
+    mismatched = [key for key, value in required.items() if config.get(key) != value]
+    if mismatched:
+        raise RuntimeError('Runtime configuration does not match production deployment: ' + ', '.join(mismatched))
     docker('network', 'inspect', 'ngx-net')
     docker('container', 'inspect', 'ngx-oauth-backhaul')
     docker('load', '--input', str(archive))
