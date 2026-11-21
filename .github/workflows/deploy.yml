@@ -119,6 +119,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Verify deployment cleanup policy
+        run: PYTHONDONTWRITEBYTECODE=1 python3 scripts/test_cleanup_deployment.py
       - name: Download this run's validated image
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -143,7 +145,7 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           fingerprint: ${{ secrets.SSH_HOST_FINGERPRINT }}
-          source: 'image.tar,image.tar.sha256,image-id.txt,scripts/deploy-production.py'
+          source: 'image.tar,image.tar.sha256,image-id.txt,scripts/deploy-production.py,scripts/cleanup-deployment.py'
           target: '/opt/ngx-nestjs-services/mcp-gateway/releases/${{ github.run_id }}-${{ github.run_attempt }}'
           overwrite: true
       - name: Promote image and verify gateway; restore previous container on failure
@@ -160,4 +162,5 @@ jobs:
             umask 077
             cd '/opt/ngx-nestjs-services/mcp-gateway/releases/${{ github.run_id }}-${{ github.run_attempt }}'
             chmod 700 .
-            flock -n /var/lock/ngx-mcp-gateway-deploy.lock python3 scripts/deploy-production.py '${{ github.sha }}' '${{ github.run_id }}-${{ github.run_attempt }}'
+            flock -n /var/lock/ngx-mcp-gateway-deploy.lock sh -ec 'python3 scripts/deploy-production.py "${{ github.sha }}" "${{ github.run_id }}-${{ github.run_attempt }}"
+              python3 scripts/cleanup-deployment.py service-mcp-gateway service-mcp-gateway'

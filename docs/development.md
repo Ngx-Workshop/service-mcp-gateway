@@ -154,3 +154,7 @@ credentials, authoring-owner URLs or journal storage. Catalog OAuth/ingress is u
 Gateway contracts preserve existing authoring exports using a packaged publisher
 contract snapshot. Historical publishing deployment instructions above describe the
 pre-extraction system. See specs/009-publisher-migration/handoff.md for current rollout.
+
+## Deployment storage policy
+
+See [deployment cleanup](deployment-cleanup.md) for success-only image/container retention and local verification.
