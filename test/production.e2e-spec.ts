@@ -73,6 +73,15 @@ describe('trusted HTTPS proxy ingress', () => {
       .expect('Access-Control-Allow-Origin', '*')
       .expect(200);
   });
+  it('permits only the exact read-only heartbeat without proxy headers', async () => {
+    await request(app.getHttpServer()).get('/health').expect(200);
+    await request(app.getHttpServer()).head('/health').expect(200);
+    await request(app.getHttpServer()).post('/health').expect(403);
+    await request(app.getHttpServer()).get('/health/other').expect(403);
+    await request(app.getHttpServer()).get('/health?bypass=true').expect(403);
+    await request(app.getHttpServer()).post('/mcp').expect(403);
+  });
+
   it('rejects direct requests without normalized proxy headers', async () => {
     await request(app.getHttpServer())
       .get('/.well-known/oauth-protected-resource/mcp')

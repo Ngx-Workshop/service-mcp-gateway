@@ -1,7 +1,6 @@
 import { bootstrap } from './bootstrap';
-void bootstrap().catch((error: unknown) => {
-  console.error(
-    error instanceof Error ? error.message : 'Catalog startup failed'
-  );
+import { createServiceLogger } from './observability/observability';
+void bootstrap().catch(() => {
+  createServiceLogger().error('Catalog startup failed', 'Bootstrap');
   process.exitCode = 1;
 });

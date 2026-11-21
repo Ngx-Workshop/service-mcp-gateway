@@ -1,3 +1,4 @@
+import { ObservabilityModule } from './observability/observability.module';
 import { PublishingProxyController } from './publisher/publishing-proxy.controller';
 import { OAuthMetadataController } from './auth/oauth-metadata.controller';
 import { Module } from '@nestjs/common';
@@ -9,7 +10,11 @@ import { McpController } from './mcp/mcp.controller';
 import { CATALOG_CONFIG, loadCatalogConfig } from './mcp/catalog.config';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), HttpModule],
+  imports: [
+    ObservabilityModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    HttpModule,
+  ],
   controllers: [
     McpController,
     OAuthMetadataController,

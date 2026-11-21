@@ -5,6 +5,11 @@ export function productionBoundary(config: CatalogConfig) {
   if (config.auth.mode !== 'oauth') throw new Error('OAuth required');
   const host = new URL(config.auth.resource).host;
   return (req: Request, res: Response, next: NextFunction): void => {
+    // Private collector heartbeat only; all business/OAuth routes retain ingress checks.
+    if (['GET', 'HEAD'].includes(req.method) && req.originalUrl === '/health') {
+      next();
+      return;
+    }
     const peer = req.socket.remoteAddress?.replace(/^::ffff:/, '');
     const client = req.headers['x-forwarded-for'];
     const count = (name: string) =>

@@ -66,6 +66,7 @@ def deploy(directory, revision, release):
     try:
         docker('run', '-d', '--name', NAME, '--env-file', str(ENV),
                '--network', 'ngx-net', '--restart', 'unless-stopped',
+               '--log-driver', 'json-file', '--log-opt', 'max-size=10m', '--log-opt', 'max-file=3',
                '--user', '1000:1000', '--read-only',
                '--tmpfs', '/tmp:size=16m,noexec,nosuid', '--cap-drop', 'ALL',
                '--security-opt', 'no-new-privileges:true',
