@@ -138,7 +138,7 @@ Clean-install validation also exposed sanitize-html 2.18.1 → htmlparser2 12's 
 parser tree, which Jest 29 had skipped transforming. Both unit and protocol Jest
 configs now enable JavaScript transformation only for the six parser-tree packages;
 runtime dependencies and sanitizer behavior were not downgraded or mocked away.
-Final local validation passes on Node 22.23.3: clean install, production audit gate,
+Final local validation passes on Node 22.23.5: clean install, production audit gate,
 strict build, 95 unit tests, 44 protocol tests, 5 publication-workflow tests, 5
 Python deployment tests, lint, contract generation/build and the exact generated-
 artifact no-diff gate. No workflow rerun, commit, push, publication or deployment
