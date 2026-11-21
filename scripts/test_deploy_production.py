@@ -65,6 +65,11 @@ class DeploymentTests(unittest.TestCase):
         self.assertNotIn('-p', run)
         self.assertNotIn('private-test-value', str(self.calls))
         self.assertNotIn(('start', deployment.NAME), self.calls)
+        probe = next(args for args in self.calls if args[0] == 'exec')
+        self.assertEqual(probe[:3], ('exec', 'ngx-oauth-backhaul', 'curl'))
+        self.assertIn('--fail', probe)
+        self.assertIn('--max-time', probe)
+        self.assertIn('X-Forwarded-Proto: https', probe)
 
     def test_missing_publisher_destination_names_field_without_exposing_settings(self):
         self.env.write_text(self.env.read_text().replace(

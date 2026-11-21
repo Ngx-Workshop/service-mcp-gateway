@@ -73,7 +73,8 @@ def deploy(directory, revision, release):
                '--mount', f'type=bind,source={SECRET},target=/run/secrets/introspection,readonly', image)
         for attempt in range(30):
             try:
-                metadata = docker('exec', 'ngx-oauth-backhaul', 'wget', '-q', '-T', '3', '-O', '-',
+                metadata = docker('exec', 'ngx-oauth-backhaul', 'curl', '--fail', '--silent',
+                                  '--show-error', '--max-time', '3', '--noproxy', '*',
                                   '--header', 'Host: mcp.ngx-workshop.io',
                                   '--header', 'X-Forwarded-Proto: https',
                                   '--header', 'X-Forwarded-For: 167.172.154.106',
