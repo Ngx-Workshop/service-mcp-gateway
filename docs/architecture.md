@@ -28,6 +28,21 @@ normally returns JSON for these short callbacks. No subscriptions are advertised
 Errors avoid upstream URLs, bodies, credentials and stacks. There is no retry,
 pagination, caching or rate-limit subsystem in this local phase.
 
+## Module and observability boundaries
+
+`AppModule` is a composition root. `CatalogConfigModule` owns and minimally
+exports the validated configuration token. `CatalogModule` owns MCP/OAuth metadata
+controllers, the exactly-three-tool service and read-only catalog adapter.
+`PublisherModule` owns only opaque publisher compatibility forwarding.
+`ObservabilityModule` owns health and exports request context. Dependencies flow
+from transport to tool use case to owner adapter; publisher forwarding remains a
+separate transport path and no feature module exports its implementation providers.
+
+HTTP middleware accepts a valid UUID `X-Request-ID` or generates one, returns it
+to the caller and propagates it through `AsyncLocalStorage`. Catalog tool
+completion events include that request ID when invoked from HTTP, but this is
+request correlation rather than distributed tracing. See `observability.md`.
+
 ## Verified upstream boundaries
 
 | Owner | Native read route | Contract |

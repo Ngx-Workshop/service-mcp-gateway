@@ -31,7 +31,9 @@ jobs:
           npm run build
           npm test -- --runInBand
           npm run test:e2e -- --runInBand
+          npm run test:formatting-workflow
           npm run lint:check
+          npm run format:check
           npm --prefix contracts/service-mcp-gateway ci
           npm run contracts:service-mcp-gateway:gen
           npm run contracts:service-mcp-gateway:build

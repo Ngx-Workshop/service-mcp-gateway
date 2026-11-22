@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+contracts/service-mcp-gateway/src/
+contracts/service-mcp-gateway/dist/
+openapi.json
+mcp-tools.json
+vendor/

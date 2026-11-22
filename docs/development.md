@@ -21,6 +21,8 @@ arguments; no client headers are forwarded.
 | Real local owners (opt-in) | npm run test:integration:local | All existing records through real MongoDB-backed owners and both MCP clients; see [setup/evidence](../specs/002-live-catalog-integration/handoff.md) |
 | Non-mutating lint | npm run lint:check | Typed ESLint and formatting |
 | Formatting | npm run format | Modifies source/test files |
+| Non-mutating formatting | npm run format:check | Checks the established source/test TypeScript baseline |
+| Hook acceptance | npm run test:formatting-workflow | Disposable Git check for staged formatting, partial staging and hook failures |
 | Contract generation/build | npm run contracts:service-mcp-gateway:gen; npm run contracts:service-mcp-gateway:build | Generated independent models and runtime schemas |
 
 Run build before protocol e2e: it compares committed generated artifacts to actual
@@ -29,6 +31,22 @@ replaced. Test HTTP servers use ephemeral localhost ports and close connections
 and timers; no external database/network services are required. One adapter test
 waits for the real 5-second timeout. These doubles do not prove live service
 compatibility or production connectivity.
+
+## Formatting lifecycle
+
+Husky and lint-staged format staged `src/**/*.ts` and `test/**/*.ts` files with
+the installed Prettier only; no commit-time network fallback is used. The default
+lint-staged stash preserves independent unstaged hunks and refuses unsafe
+restoration conflicts. The guarded `prepare` lifecycle installs hooks only in a
+developer Git checkout with Husky present. It safely skips CI, `HUSKY=0`,
+production/no-dev and package-only/no-Git installs. Generated contracts,
+OpenAPI/MCP artifacts, build/coverage output and vendor assets are ignored.
+
+The wider repository currently has historical Markdown/generated formatting
+drift, so `format:check` deliberately matches the previously clean source/test
+TypeScript baseline rather than causing an incidental rewrite. CI runs the hook
+acceptance and non-mutating format checks. Keep the lockfile generated with npm
+10.9.9 for the Node 22 optional-peer tree.
 
 ## Regeneration
 

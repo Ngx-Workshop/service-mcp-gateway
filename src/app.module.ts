@@ -1,32 +1,17 @@
 import { ObservabilityModule } from './observability/observability.module';
-import { PublishingProxyController } from './publisher/publishing-proxy.controller';
-import { OAuthMetadataController } from './auth/oauth-metadata.controller';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { HttpModule } from '@nestjs/axios';
-import { CatalogClient } from './clients/catalog.client';
-import { CatalogToolsService } from './tools/catalog-tools.service';
-import { McpController } from './mcp/mcp.controller';
-import { CATALOG_CONFIG, loadCatalogConfig } from './mcp/catalog.config';
+import { CatalogConfigModule } from './mcp/catalog-config.module';
+import { CatalogModule } from './mcp/catalog.module';
+import { PublisherModule } from './publisher/publisher.module';
 
 @Module({
   imports: [
     ObservabilityModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    HttpModule,
-  ],
-  controllers: [
-    McpController,
-    OAuthMetadataController,
-    PublishingProxyController,
-  ],
-  providers: [
-    CatalogClient,
-    CatalogToolsService,
-    {
-      provide: CATALOG_CONFIG,
-      useFactory: () => loadCatalogConfig(process.env),
-    },
+    CatalogConfigModule,
+    CatalogModule,
+    PublisherModule,
   ],
 })
 export class AppModule {}

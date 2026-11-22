@@ -2,7 +2,7 @@ import request from 'supertest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import {
   Client,
@@ -24,6 +24,7 @@ import {
   listWorkshopsOutputSchema,
   toolErrorSchema,
 } from '../src/tools/catalog.schemas';
+import { configureObservability } from '../src/observability/observability';
 
 // Real Nest listener + official SDK + disposable HTTP domain servers.
 describe('Local MCP catalog protocol', () => {
@@ -43,6 +44,7 @@ describe('Local MCP catalog protocol', () => {
       })
       .compile();
     app = module.createNestApplication({ bodyParser: false });
+    configureObservability(app);
     app.use(localBoundary);
     await app.listen(0, '127.0.0.1');
     url = `${await app.getUrl()}/mcp`;
@@ -56,6 +58,7 @@ describe('Local MCP catalog protocol', () => {
           headers: {
             Authorization: 'Bearer should-not-forward',
             Cookie: 'accessToken=should-not-forward',
+            'X-Request-ID': '00000000-0000-4000-8000-000000000003',
           },
         },
       })
@@ -167,6 +170,46 @@ describe('Local MCP catalog protocol', () => {
       expect(upstream.requests).toHaveLength(0);
     }
   );
+  it('logs safe correlated tool outcomes without payloads or upstream errors', async () => {
+    const log = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    try {
+      await client.callTool({
+        name: 'list_workshops',
+        arguments: { sectionId: 'private-section-content' },
+      });
+      upstream.status = 503;
+      upstream.body = { secret: 'private-upstream-error' };
+      await client.callTool({
+        name: 'get_coding_lab',
+        arguments: { labId: LAB_ID },
+      });
+      expect(log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          event: 'catalog_tool_call',
+          operation: 'list_workshops',
+          outcome: 'success',
+          requestId: '00000000-0000-4000-8000-000000000003',
+          durationMs: expect.any(Number) as unknown,
+        })
+      );
+      expect(error).toHaveBeenCalledWith(
+        expect.objectContaining({
+          event: 'catalog_tool_call',
+          operation: 'get_coding_lab',
+          outcome: 'failure',
+          errorCode: 'UPSTREAM_UNAVAILABLE',
+          requestId: '00000000-0000-4000-8000-000000000003',
+        })
+      );
+      expect(JSON.stringify([log.mock.calls, error.mock.calls])).not.toContain(
+        'private-'
+      );
+    } finally {
+      log.mockRestore();
+      error.mockRestore();
+    }
+  });
   it.each([
     [404, 'NOT_FOUND'],
     [403, 'FORBIDDEN'],

@@ -37,3 +37,15 @@ Do not require sibling checkouts to work locally.
   and the former manual-only rollout gate.
 
 The lightweight Markdown workflow requires no installed Spec Kit or slash commands.
+
+## Current task: Code Maintenance
+
+The selected work is [Code Maintenance](specs/012-code-maintenance/spec.md)
+(implemented locally; Docker/Grafana acceptance pending).
+Read its [plan](specs/012-code-maintenance/plan.md), [tasks](specs/012-code-maintenance/tasks.md) and
+[handoff](specs/012-code-maintenance/handoff.md). Retain older unfinished feature records without treating them as the
+next task. The work covers
+NestJS module/domain boundaries, thin controllers, cohesive services, Prettier
+with Husky/lint-staged, CI checks and safe domain logging through existing
+observability. Consult the audit and handoff for completed local evidence and
+remaining external checks.
