@@ -16,11 +16,17 @@ const { spawnSync } = require('node:child_process');
 const repository = resolve(__dirname, '..');
 const fixture = mkdtempSync(join(tmpdir(), 'gateway-formatting-'));
 
-function run(command, args, expectedStatus = 0) {
+// The throwaway repository models a developer commit, even when the test runs in CI.
+const hookEnv = { ...process.env };
+delete hookEnv.CI;
+delete hookEnv.HUSKY;
+delete hookEnv.NODE_ENV;
+
+function run(command, args, { expectedStatus = 0, env = process.env } = {}) {
   const result = spawnSync(command, args, {
     cwd: fixture,
     encoding: 'utf8',
-    env: process.env,
+    env,
   });
   assert.equal(
     result.status,
@@ -61,7 +67,7 @@ try {
   run('git', ['config', 'user.email', 'formatting@example.invalid']);
   run('git', ['add', '.']);
   run('git', ['commit', '--quiet', '--no-verify', '-m', 'baseline']);
-  run(process.execPath, ['scripts/prepare-husky.cjs']);
+  run(process.execPath, ['scripts/prepare-husky.cjs'], { env: hookEnv });
 
   writeFileSync(
     join(fixture, 'src/sample.ts'),
@@ -72,7 +78,9 @@ try {
     join(fixture, 'src/sample.ts'),
     'export   const value=2\nexport const stable = true;\nexport   const unstaged=true\n'
   );
-  run('git', ['commit', '--quiet', '-m', 'format staged content']);
+  run('git', ['commit', '--quiet', '-m', 'format staged content'], {
+    env: hookEnv,
+  });
   assert.equal(
     run('git', ['show', 'HEAD:src/sample.ts']).stdout,
     'export const value = 2;\nexport const stable = true;\n'
@@ -82,7 +90,7 @@ try {
     'export const value = 2;\nexport const stable = true;\nexport   const unstaged=true\n'
   );
 
-  const formatCheck = run('npm', ['run', 'format:check'], 1);
+  const formatCheck = run('npm', ['run', 'format:check'], { expectedStatus: 1 });
   assert.match(
     formatCheck.stdout + formatCheck.stderr,
     /Code style issues found/
@@ -91,7 +99,10 @@ try {
   writeFileSync(join(fixture, '.husky/pre-commit'), 'exit 1\n');
   chmodSync(join(fixture, '.husky/pre-commit'), 0o755);
   run('git', ['add', 'src/sample.ts']);
-  run('git', ['commit', '--quiet', '-m', 'must be blocked'], 1);
+  run('git', ['commit', '--quiet', '-m', 'must be blocked'], {
+    expectedStatus: 1,
+    env: hookEnv,
+  });
   assert.equal(
     run('git', ['show', 'HEAD:src/sample.ts']).stdout,
     'export const value = 2;\nexport const stable = true;\n'
