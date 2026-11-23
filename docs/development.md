@@ -13,17 +13,17 @@ arguments; no client headers are forwarded.
 
 ## Checks
 
-| Check | Command | Evidence |
-| --- | --- | --- |
-| Unit and adapter HTTP | npm test -- --runInBand | Schemas/config/error mappings and disposable HTTP owner responses |
-| Strict application build and generation | npm run build | Type checks, OpenAPI components and mcp-tools.json |
-| Protocol e2e | npm run test:e2e -- --runInBand | Actual Nest socket and official modern/legacy MCP client |
-| Real local owners (opt-in) | npm run test:integration:local | All existing records through real MongoDB-backed owners and both MCP clients; see [setup/evidence](../specs/002-live-catalog-integration/handoff.md) |
-| Non-mutating lint | npm run lint:check | Typed ESLint and formatting |
-| Formatting | npm run format | Modifies source/test files |
-| Non-mutating formatting | npm run format:check | Checks the established source/test TypeScript baseline |
-| Hook acceptance | npm run test:formatting-workflow | Disposable Git check for staged formatting, partial staging and hook failures |
-| Contract generation/build | npm run contracts:service-mcp-gateway:gen; npm run contracts:service-mcp-gateway:build | Generated independent models and runtime schemas |
+| Check                                   | Command                                                                                | Evidence                                                                                                                                             |
+| --------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit and adapter HTTP                   | npm test -- --runInBand                                                                | Schemas/config/error mappings and disposable HTTP owner responses                                                                                    |
+| Strict application build and generation | npm run build                                                                          | Type checks, OpenAPI components and mcp-tools.json                                                                                                   |
+| Protocol e2e                            | npm run test:e2e -- --runInBand                                                        | Actual Nest socket and official modern/legacy MCP client                                                                                             |
+| Real local owners (opt-in)              | npm run test:integration:local                                                         | All existing records through real MongoDB-backed owners and both MCP clients; see [setup/evidence](../specs/002-live-catalog-integration/handoff.md) |
+| Non-mutating lint                       | npm run lint:check                                                                     | Typed ESLint and formatting                                                                                                                          |
+| Formatting                              | npm run format                                                                         | Modifies source/test files                                                                                                                           |
+| Non-mutating formatting                 | npm run format:check                                                                   | Checks the established source/test TypeScript baseline                                                                                               |
+| Hook acceptance                         | npm run test:formatting-workflow                                                       | Disposable Git check for staged formatting, partial staging and hook failures                                                                        |
+| Contract generation/build               | npm run contracts:service-mcp-gateway:gen; npm run contracts:service-mcp-gateway:build | Generated independent models and runtime schemas                                                                                                     |
 
 Run build before protocol e2e: it compares committed generated artifacts to actual
 discovery. A no-tests exit is not a pass. The old Hello World e2e scaffold was
@@ -56,7 +56,7 @@ acceptance and non-mutating format checks. Keep the lockfile generated with npm
 4. Run `npm --prefix contracts/service-mcp-gateway run clean`, then root contract
    generation/build scripts.
 5. Check generated differences and consumer impact. Run package dry-runs from the contracts directory (npm pack --dry-run), since
-`npm --prefix ... pack` can select the service root. The package exports types
+   `npm --prefix ... pack` can select the service root. The package exports types
    through generated components aliases and runtime `mcpCatalogContract` through
    generated TypeScript; JSON import attributes are not needed at runtime.
 
@@ -128,6 +128,7 @@ are unchanged. Proposed domains and live infrastructure state require verificati
 before later release work.
 
 ## Workshop publishing
+
 See [configuration and recovery](workshop-publishing.md). The normal test suite includes publishing tests; protocol e2e includes the separate admin endpoint. Tests use doubles and temporary receipts, never real workshops or paid model calls.
 
 ## Preparation verification — 2026-11-05
@@ -180,3 +181,5 @@ See [deployment cleanup](deployment-cleanup.md) for success-only image/container
 ## Service observability
 
 See [logging and heartbeat](observability.md) for operational endpoint semantics, JSON logging, collector ownership and actual validation.
+
+Deployment and npm publication now follow [deployment-workflows](deployment-workflows.md).

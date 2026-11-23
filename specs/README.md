@@ -34,3 +34,5 @@ plan, tasks and handoff for work without prior conversation context.
 - [010-deployment-cleanup](010-deployment-cleanup/spec.md): Deployment cleanup; implemented and locally verified.
 
 - [011-service-observability](011-service-observability/spec.md): Implemented and locally verified; Grafana ingestion authorization pending.
+
+- [013-deployment-management](013-deployment-management/spec.md): Implemented locally; automatic verification/deployment, manual publication.

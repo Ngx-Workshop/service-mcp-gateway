@@ -49,3 +49,5 @@ NestJS module/domain boundaries, thin controllers, cohesive services, Prettier
 with Husky/lint-staged, CI checks and safe domain logging through existing
 observability. Consult the audit and handoff for completed local evidence and
 remaining external checks.
+
+Current deployment policy: [deployment-workflows](docs/deployment-workflows.md). Automatic main delivery verifies/deploys; npm publication is manual only. This supersedes older automatic-publishing instructions.

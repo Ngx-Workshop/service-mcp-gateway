@@ -9,18 +9,18 @@ service. This gateway owns AI-facing contracts and transport only. It has no
 MongoDB connection; authoring writes use owning REST APIs through the separate administrator endpoint. The old example CRUD module
 has been removed.
 
-| Concern | Source | Behavior |
-| --- | --- | --- |
-| Runtime | `src/bootstrap.ts`, `src/main.ts` | Local loopback or explicit production listener; bounded SDK body parsing; shutdown hooks |
-| Configuration | `src/mcp/catalog.config.ts` | Validated owner URLs, public HTTPS identity and runtime profile |
-| Local boundary | `src/mcp/local-boundary.ts` | Host allowlist; reject invalid present Origin before parsing |
-| OAuth | `src/auth/` | Configured resource/issuer; header bearer before parsing; request-local SDK AuthInfo; 401/403/503; public metadata/preflight |
-| Protocol | `src/mcp/mcp.controller.ts` | Official createMcpHandler/toNodeHandler, stateless modern and legacy requests |
-| Registration | `src/tools/catalog-tools.service.ts` | Exactly three tools; Observable/Promise boundary; sanitized execution errors |
-| MCP contracts | `src/tools/catalog.schemas.ts` | Strict input/output schemas, annotations and error contract |
-| Service adapters | `src/clients/catalog.client.ts` | GET only, 5-second timeout, 2 MiB response limit, no redirects/proxies or forwarded credentials |
-| Runtime domain validation | `src/clients/upstream.schemas.ts` | Consumed-field projections checked against pinned published types |
-| Generation | `src/swagger.ts`, `scripts/export-mcp-contracts.cjs` | OpenAPI components, discovery JSON, independent models/runtime JSON Schemas |
+| Concern                   | Source                                               | Behavior                                                                                                                     |
+| ------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Runtime                   | `src/bootstrap.ts`, `src/main.ts`                    | Local loopback or explicit production listener; bounded SDK body parsing; shutdown hooks                                     |
+| Configuration             | `src/mcp/catalog.config.ts`                          | Validated owner URLs, public HTTPS identity and runtime profile                                                              |
+| Local boundary            | `src/mcp/local-boundary.ts`                          | Host allowlist; reject invalid present Origin before parsing                                                                 |
+| OAuth                     | `src/auth/`                                          | Configured resource/issuer; header bearer before parsing; request-local SDK AuthInfo; 401/403/503; public metadata/preflight |
+| Protocol                  | `src/mcp/mcp.controller.ts`                          | Official createMcpHandler/toNodeHandler, stateless modern and legacy requests                                                |
+| Registration              | `src/tools/catalog-tools.service.ts`                 | Exactly three tools; Observable/Promise boundary; sanitized execution errors                                                 |
+| MCP contracts             | `src/tools/catalog.schemas.ts`                       | Strict input/output schemas, annotations and error contract                                                                  |
+| Service adapters          | `src/clients/catalog.client.ts`                      | GET only, 5-second timeout, 2 MiB response limit, no redirects/proxies or forwarded credentials                              |
+| Runtime domain validation | `src/clients/upstream.schemas.ts`                    | Consumed-field projections checked against pinned published types                                                            |
+| Generation                | `src/swagger.ts`, `scripts/export-mcp-contracts.cjs` | OpenAPI components, discovery JSON, independent models/runtime JSON Schemas                                                  |
 
 The request limit is 64 KiB; lists/outlines cap at 500 and sample tests at 100.
 Oversized results fail rather than silently omit records. SDK response mode auto
@@ -45,9 +45,9 @@ request correlation rather than distributed tracing. See `observability.md`.
 
 ## Verified upstream boundaries
 
-| Owner | Native read route | Contract |
-| --- | --- | --- |
-| service-document | GET /navigation/workshops?section=… | @tmdjr/document-contracts 0.0.37, WorkshopDto consumed fields |
+| Owner               | Native read route                      | Contract                                                            |
+| ------------------- | -------------------------------------- | ------------------------------------------------------------------- |
+| service-document    | GET /navigation/workshops?section=…    | @tmdjr/document-contracts 0.0.37, WorkshopDto consumed fields       |
 | service-coding-labs | GET /published-labs/:labId?versionId=… | @tmdjr/coding-labs-contracts 0.0.9, PublishedLabDto consumed fields |
 
 There is no verified workshop detail route. get_workshop selects within a section
@@ -123,3 +123,5 @@ credentials, authoring-owner URLs or journal storage. Catalog OAuth/ingress is u
 Gateway contracts preserve existing authoring exports using a packaged publisher
 contract snapshot. Historical publishing deployment instructions above describe the
 pre-extraction system. See specs/009-publisher-migration/handoff.md for current rollout.
+
+Generated deployment orchestration is centrally managed by the Node CLI; see [deployment-workflows](deployment-workflows.md).
